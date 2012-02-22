@@ -16,6 +16,7 @@
 #
 
 require 'couchbase/model/version'
+require 'couchbase/model/uuid'
 
 module Couchbase
 
