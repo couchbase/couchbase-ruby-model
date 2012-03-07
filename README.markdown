@@ -1,4 +1,4 @@
-# Couchbase Model
+# Couchbase Model [![Build Status](https://secure.travis-ci.org/avsej/ruby-couchbase-model.png?branch=master)](http://travis-ci.org/avsej/ruby-couchbase-model)
 
 This library allows to declare models for [couchbase gem][1]. Here are example:
 
