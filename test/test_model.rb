@@ -69,6 +69,19 @@ class TestModel < MiniTest::Unit::TestCase
     EOC
   end
 
+  def test_allows_to_define_several_attributes_at_once
+    eval <<-EOC
+      class Comment < Couchbase::Model
+        attribute :name, :email, :body
+      end
+    EOC
+
+    comment = Comment.new
+    assert comment.respond_to?(:name)
+    assert comment.respond_to?(:email)
+    assert comment.respond_to?(:body)
+  end
+
   def test_allows_arbitrary_ids
     Post.create(:id => uniq_id, :title => "Foo")
     assert_equal "Foo", Post.find(uniq_id).title

@@ -122,14 +122,16 @@ module Couchbase
     #  post = Post.new(:title => 'Hello world',
     #                  :body => 'This is the first example...',
     #                  :published_at => Time.now)
-    def self.attribute(name)
-      define_method(name) do
-        @_attributes[name]
+    def self.attribute(*names)
+      names.each do |name|
+        define_method(name) do
+          @_attributes[name]
+        end
+        define_method(:"#{name}=") do |value|
+          @_attributes[name] = value
+        end
+        attributes << name unless attributes.include?(name)
       end
-      define_method(:"#{name}=") do |value|
-        @_attributes[name] = value
-      end
-      attributes << name unless attributes.include?(name)
     end
 
     # Find the model using +id+ attribute
