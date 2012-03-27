@@ -5,9 +5,9 @@ require "couchbase/model/version"
 Gem::Specification.new do |s|
   s.name        = "couchbase-model"
   s.version     = Couchbase::Model::VERSION
-  s.authors     = ["Sergey Avseyev"]
-  s.email       = ["sergey.avseyev@gmail.com"]
-  s.homepage    = ""
+  s.author      = "Couchbase"
+  s.email       = "support@couchbase.com"
+  s.homepage    = "https://github.com/couchbaselabs/ruby-couchbase-model"
   s.summary     = %q{Declarative interface to Couchbase}
   s.description = %q{ORM-like interface allows you to persist your models to Couchbase}
 
@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
 
-  s.add_runtime_dependency 'couchbase', '~> 1.1.0'
+  s.add_runtime_dependency 'couchbase', '~> 1.2.0.dp'
 
   s.add_development_dependency 'rake', '~> 0.8.7'
   s.add_development_dependency 'minitest'
