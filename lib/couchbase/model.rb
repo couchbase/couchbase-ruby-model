@@ -74,8 +74,8 @@ module Couchbase
     # Each model must have identifier
     attr_accessor :id
 
-    # @private Container for all attributes of all subclasses
-    @@attributes = ::Hash.new {|hash, key| hash[key] = []}
+    # @private Container for all attributes with defaults of all subclasses
+    @@attributes = ::Hash.new {|hash, key| hash[key] = {}}
 
     # Use custom connection options
     #
@@ -123,6 +123,10 @@ module Couchbase
     #                  :body => 'This is the first example...',
     #                  :published_at => Time.now)
     def self.attribute(*names)
+      options = {}
+      if names.last.is_a?(Hash)
+        options = names.pop
+      end
       names.each do |name|
         define_method(name) do
           @_attributes[name]
@@ -130,7 +134,7 @@ module Couchbase
         define_method(:"#{name}=") do |value|
           @_attributes[name] = value
         end
-        attributes << name unless attributes.include?(name)
+        attributes[name] = options[:default]
       end
     end
 
@@ -161,7 +165,14 @@ module Couchbase
     # @param [Hash] attrs attribute-value pairs
     def initialize(attrs = {})
       @id = nil
-      @_attributes = ::Hash.new
+      @_attributes = ::Hash.new do |h, k|
+        default = self.class.attributes[k]
+        h[k] = if default.respond_to?(:call)
+                 default.call
+               else
+                 default
+               end
+      end
       update_attributes(attrs)
     end
 
@@ -177,7 +188,7 @@ module Couchbase
     #   p.create
     def create
       @id ||= Couchbase::Model::UUID.generator.next(1, model.thread_storage[:uuid_algorithm])
-      model.bucket.add(@id, attributes)
+      model.bucket.add(@id, attributes_with_values)
       self
     end
 
@@ -191,7 +202,7 @@ module Couchbase
     #   p.save
     def save
       return create if new?
-      model.bucket.set(@id, attributes)
+      model.bucket.set(@id, attributes_with_values)
       self
     end
 
@@ -329,6 +340,18 @@ module Couchbase
               attrs.map{|a| a.join("=")}.join(" "))
     end
 
+    protected
+
+    # @private Returns a hash with model attributes
+    #
+    # @since 0.1.0
+    def attributes_with_values
+      ret = {:type => model.design_document}
+      model.attributes.keys.each do |attr|
+        ret[attr] = @_attributes[attr]
+      end
+      ret
+    end
   end
 
 end

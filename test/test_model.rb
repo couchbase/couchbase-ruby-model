@@ -20,6 +20,8 @@ require File.join(File.dirname(__FILE__), 'setup')
 class Post < Couchbase::Model
   attribute :title
   attribute :body
+  attribute :author, :default => 'Anonymous'
+  attribute :created_at, :default => lambda { Time.new("2010-01-01") }
 end
 
 class TestModel < MiniTest::Unit::TestCase
@@ -39,6 +41,20 @@ class TestModel < MiniTest::Unit::TestCase
     assert_equal "Hello, world", post.title
     refute post.body
     refute post.id
+  end
+
+  def test_uses_default_value_or_nil
+    post = Post.new(:title => "Hello, world")
+    refute post.body
+    assert_equal 'Anonymous', post.author
+    assert_equal 'Anonymous', post.attributes[:author]
+  end
+
+  def test_allows_lambda_as_default_value
+    post = Post.new(:title => "Hello, world")
+    expected = Time.new("2010-01-01")
+    assert_equal expected, post.created_at
+    assert_equal expected, post.attributes[:created_at]
   end
 
   def test_assings_id_and_saves_the_object
