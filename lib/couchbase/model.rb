@@ -21,9 +21,12 @@ require 'couchbase/model/uuid'
 
 module Couchbase
 
+  # @since 0.0.1
   class Error::MissingId < Error::Base; end
 
   # Declarative layer for Couchbase gem
+  #
+  # @since 0.0.1
   #
   #  require 'couchbase/model'
   #
@@ -72,6 +75,8 @@ module Couchbase
   #  end
   class Model
     # Each model must have identifier
+    #
+    # @since 0.0.1
     attr_accessor :id
 
     # @private Container for all attributes with defaults of all subclasses
@@ -79,7 +84,10 @@ module Couchbase
 
     # Use custom connection options
     #
+    # @since 0.0.1
+    #
     # @param [String, Hash, Array] options for establishing connection.
+    # @return [Couchbase::Bucket]
     #
     # @see Couchbase::Bucket#initialize
     #
@@ -94,6 +102,8 @@ module Couchbase
 
     # Choose the UUID generation algorithms
     #
+    # @since 0.0.1
+    #
     # @param [Symbol] algorithm (:sequential) one of the available
     #   algorithms.
     #
@@ -104,11 +114,15 @@ module Couchbase
     #     uuid_algorithm :random
     #     ...
     #   end
+    #
+    # @return [Symbol]
     def self.uuid_algorithm(algorithm)
       self.thread_storage[:uuid_algorithm] = algorithm
     end
 
     # Defines an attribute for the model
+    #
+    # @since 0.0.1
     #
     # @param [Symbol, String] name name of the attribute
     #
@@ -140,6 +154,8 @@ module Couchbase
 
     # Find the model using +id+ attribute
     #
+    # @since 0.0.1
+    #
     # @param [String, Symbol] id model identificator
     # @return [Couchbase::Model] an instance of the model
     #
@@ -153,14 +169,19 @@ module Couchbase
 
     # Create the model with given attributes
     #
+    # @since 0.0.1
+    #
     # @param [Hash] args attribute-value pairs for the object
     # @return [Couchbase::Model] an instance of the model
     def self.create(*args)
       new(*args).create
     end
 
-    # Constructor for all subclasses of Couchbase::Model, which optionally
-    # takes a Hash of attribute value pairs.
+    # Constructor for all subclasses of Couchbase::Model
+    #
+    # @since 0.0.1
+    #
+    # Optionally takes a Hash of attribute value pairs.
     #
     # @param [Hash] attrs attribute-value pairs
     def initialize(attrs = {})
@@ -178,6 +199,8 @@ module Couchbase
 
     # Create this model and assign new id if necessary
     #
+    # @since 0.0.1
+    #
     # @return [Couchbase::Model] newly created object
     #
     # @raise [Couchbase::Error::KeyExists] if model with the same +id+
@@ -194,6 +217,8 @@ module Couchbase
 
     # Create or update this object based on the state of #new?.
     #
+    # @since 0.0.1
+    #
     # @return [Couchbase::Model] The saved object
     #
     # @example Update the Post model
@@ -208,6 +233,8 @@ module Couchbase
 
     # Update this object, optionally accepting new attributes.
     #
+    # @since 0.0.1
+    #
     # @param [Hash] attrs Attribute value pairs to use for the updated
     #               version
     # @return [Couchbase::Model] The updated object
@@ -217,6 +244,8 @@ module Couchbase
     end
 
     # Delete this object from the bucket
+    #
+    # @since 0.0.1
     #
     # @note This method will reset +id+ attribute
     #
@@ -234,6 +263,8 @@ module Couchbase
 
     # Check if the record have +id+ attribute
     #
+    # @since 0.0.1
+    #
     # @return [true, false] Whether or not this object has an id.
     #
     # @note +true+ doesn't mean that record exists in the database
@@ -245,6 +276,8 @@ module Couchbase
 
     # Check if the key exists in the bucket
     #
+    # @since 0.0.1
+    #
     # @param [String, Symbol] id the record identifier
     # @return [true, false] Whether or not the object with given +id+
     #   presented in the bucket.
@@ -254,6 +287,8 @@ module Couchbase
 
     # Check if this model exists in the bucket.
     #
+    # @since 0.0.1
+    #
     # @return [true, false] Whether or not this object presented in the
     #   bucket.
     def exists?
@@ -262,12 +297,18 @@ module Couchbase
 
     # All the defined attributes within a class.
     #
+    # @since 0.0.1
+    #
     # @see Model.attribute
+    #
+    # @return [Hash]
     def self.attributes
       @@attributes[self]
     end
 
     # All the attributes of the current instance
+    #
+    # @since 0.0.1
     #
     # @return [Hash]
     def attributes
@@ -275,6 +316,8 @@ module Couchbase
     end
 
     # Update all attributes without persisting the changes.
+    #
+    # @since 0.0.1
     #
     # @param [Hash] attrs attribute-value pairs.
     def update_attributes(attrs)
@@ -288,6 +331,8 @@ module Couchbase
 
     # Reload all the model attributes from the bucket
     #
+    # @since 0.0.1
+    #
     # @return [Model] the latest model state
     #
     # @raise [Error::MissingId] for records without +id+
@@ -300,16 +345,22 @@ module Couchbase
     end
 
     # @private The thread local storage for model specific stuff
+    #
+    # @since 0.0.1
     def self.thread_storage
       Couchbase.thread_storage[self] ||= {:uuid_algorithm => :sequential}
     end
 
     # @private Fetch the current connection
+    #
+    # @since 0.0.1
     def self.bucket
       self.thread_storage[:bucket] ||= Couchbase.bucket
     end
 
     # @private Set the current connection
+    #
+    # @since 0.0.1
     #
     # @param [Bucket] connection the connection instance
     def self.bucket=(connection)
@@ -317,11 +368,15 @@ module Couchbase
     end
 
     # @private Get model class
+    #
+    # @since 0.0.1
     def model
       self.class
     end
 
     # @private Wrap the hash to the model class
+    #
+    # @since 0.0.1
     #
     # @param [Model, Hash] the Couchbase::Model subclass or the
     #   attribute-value pairs
@@ -331,6 +386,8 @@ module Couchbase
 
     # @private Returns a string containing a human-readable representation
     # of the record.
+    #
+    # @since 0.0.1
     def inspect
       attrs = model.attributes.sort.map do |attr|
         [attr, @_attributes[attr].inspect]

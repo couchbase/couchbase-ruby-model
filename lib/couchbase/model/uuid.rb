@@ -23,14 +23,22 @@ module Couchbase
 
     # Generator of CouchDB specfic UUIDs. This is the ruby implementation of
     # couch_uuids.erl from couchdb distribution. It is threadsafe.
+    #
+    # @since 0.0.1
 
     class UUID
       # Get default UUID generator. You can create your own if you like.
+      #
+      # @since 0.0.1
+      #
+      # @return [UUID]
       def self.generator
         @generator ||= UUID.new
       end
 
       # Initialize generator.
+      #
+      # @since 0.0.1
       #
       # @param [Fixnum] seed seed for pseudorandom number generator.
       def initialize(seed = nil)
@@ -41,6 +49,8 @@ module Couchbase
       end
 
       # Generate list of UUIDs.
+      #
+      # @since 0.0.1
       #
       # @param [Fixnum] count number of UUIDs you need
       #
