@@ -76,6 +76,16 @@ class TestModel < MiniTest::Unit::TestCase
     assert_equal "Good bye, world", orig.title
   end
 
+  def test_it_raises_not_found_exception
+    assert_raises Couchbase::Error::MissingId do
+      Post.find("missing_key")
+    end
+  end
+
+  def test_it_raises_not_found_exception
+     refute Post.find_by_id("missing_key")
+  end
+
   def test_doesnt_raise_if_the_attribute_redefined
     eval <<-EOC
       class RefinedPost < Couchbase::Model

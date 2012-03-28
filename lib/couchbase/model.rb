@@ -158,11 +158,28 @@ module Couchbase
     #
     # @param [String, Symbol] id model identificator
     # @return [Couchbase::Model] an instance of the model
+    # @raise [Couchbase::Error::NotFound] when given key isn't exist
     #
     # @example Find model using +id+
     #   post = Post.find('the-id')
     def self.find(id)
-      if id && (obj = bucket.get(id))
+      if id && (obj = bucket.get(id, :quiet => false))
+        new({:id => id}.merge(obj))
+      end
+    end
+
+    # Find the model using +id+ attribute
+    #
+    # @since 0.1.0
+    #
+    # @param [String, Symbol] id model identificator
+    # @return [Couchbase::Model, nil] an instance of the model or +nil+ if
+    #   given key isn't exist
+    #
+    # @example Find model using +id+
+    #   post = Post.find_by_id('the-id')
+    def self.find_by_id(id)
+      if id && (obj = bucket.get(id, :quiet => true))
         new({:id => id}.merge(obj))
       end
     end
