@@ -100,6 +100,28 @@ module Rails #:nodoc:
         end
       end
 
+      # Setup where design documents are located
+      initializer "couchbase.set_design_documents_path" do
+        config.after_initialize do
+        end
+      end
+
+      # Check (and upgrade if needed) all design documents
+      initializer "couchbase.upgrade_design_documents" do |app|
+        config.to_prepare do
+          ::Couchbase::Model::Configuration.design_documents_paths ||= app.config.paths["app/models"]
+          app.config.paths["app/models"].each do |path|
+            Dir.glob("#{path}/**/*.rb").sort.each do |file|
+              require_dependency(file.gsub("#{path}/" , "").gsub(".rb", ""))
+            end
+          end
+          ::Couchbase::Model.descendants.each do |model|
+            model.ensure_design_document!
+          end
+        end
+      end
+
+
       # Set the proper error types for Rails. NotFound errors should be
       # 404s and not 500s, validation errors are 422s.
       initializer "couchbase.load_http_errors" do |app|

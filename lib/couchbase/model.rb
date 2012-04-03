@@ -15,9 +15,12 @@
 # limitations under the License.
 #
 
+require 'digest/md5'
+
 require 'couchbase'
 require 'couchbase/model/version'
 require 'couchbase/model/uuid'
+require 'couchbase/model/configuration'
 
 module Couchbase
 
@@ -147,6 +150,62 @@ module Couchbase
                            name.gsub!(/([a-z\d])([A-Z])/,'\1_\2')
                            name.downcase!
                          end
+      end
+    end
+
+    # Ensure that design document is up to date.
+    #
+    # @since 0.1.0
+    #
+    # This method also cares about organizing view in separate javascript
+    # files. The general structure is the following (+[root]+ is the
+    # directory, one of the {Model::Configuration.design_documents_paths}):
+    #
+    #   [root]
+    #   |
+    #   `- link
+    #   |  |
+    #   |  `- by_created_at
+    #   |  |  |
+    #   |  |  `- map.js
+    #   |  |
+    #   |  `- by_session_id
+    #   |  |  |
+    #   |  |  `- map.js
+    #   |  |
+    #   |  `- total_views
+    #   |  |  |
+    #   |  |  `- map.js
+    #   |  |  |
+    #   |  |  `- reduce.js
+    #
+    # The directory structure above demonstrate layout for design document
+    # with id +_design/link+ and three views: +by_create_at+,
+    # +by_session_id` and `total_views`.
+    def self.ensure_design_document!
+      unless Configuration.design_documents_paths
+        raise "Configuration.design_documents_path must be directory"
+      end
+
+      doc = {'_id' => "_design/#{design_document}", 'views' => {}}
+      digest = Digest::MD5.new
+      views.each do |name|
+        doc['views'][name] = view = {}
+        ['map', 'reduce'].each do |type|
+          Configuration.design_documents_paths.each do |path|
+            ff = File.join(path, design_document.to_s, name.to_s, "#{type}.js")
+            if File.file?(ff)
+              view[type] = File.read(ff)
+              digest << view[type]
+              break # pick first matching file
+            end
+          end
+        end
+      end
+      doc['signature'] = digest.to_s
+      current_doc = bucket.design_docs[design_document.to_s]
+      if current_doc.nil? || current_doc['signature'] != doc['signature']
+        bucket.save_design_doc(doc)
       end
     end
 
