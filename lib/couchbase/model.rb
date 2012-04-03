@@ -79,14 +79,30 @@ module Couchbase
     # @since 0.0.1
     attr_accessor :id
 
+    # @since 0.1.0
+    attr_reader :_key
+
+    # @since 0.1.0
+    attr_reader :_value
+
+    # @since 0.1.0
+    attr_reader :_doc
+
+    # @since 0.1.0
+    attr_reader :_meta
+
     # @private Container for all attributes with defaults of all subclasses
     @@attributes = ::Hash.new {|hash, key| hash[key] = {}}
+
+    # @private Container for all view names of all subclasses
+    @@views = ::Hash.new {|hash, key| hash[key] = []}
 
     # Use custom connection options
     #
     # @since 0.0.1
     #
-    # @param [String, Hash, Array] options for establishing connection.
+    # @param [String, Hash, Array] options options for establishing
+    #   connection.
     # @return [Couchbase::Bucket]
     #
     # @see Couchbase::Bucket#initialize
@@ -98,6 +114,40 @@ module Couchbase
     #   end
     def self.connect(*options)
       self.bucket = Couchbase.connect(*options)
+    end
+
+    # Associate custom design document with the model
+    #
+    # Design document is the special document which contains views, the
+    # chunks of code for building map/reduce indexes. When this method
+    # called without argument, it just returns the effective design document
+    # name.
+    #
+    # @since 0.1.0
+    #
+    # @see http://www.couchbase.com/docs/couchbase-manual-2.0/couchbase-views.html
+    #
+    # @param [String, Symbol] name the name for the design document. By
+    #   default underscored model name is used.
+    # @return [String] the effective design document
+    #
+    # @example Choose specific design document name
+    #   class Post < Couchbase::Model
+    #     design_document :my_posts
+    #     ...
+    #   end
+    def self.design_document(name = nil)
+      if name
+        @_design_doc = name.to_s
+      else
+        @_design_doc ||= begin
+                           name = self.name.dup
+                           name.gsub!(/::/, '_')
+                           name.gsub!(/([A-Z\d]+)([A-Z][a-z])/,'\1_\2')
+                           name.gsub!(/([a-z\d])([A-Z])/,'\1_\2')
+                           name.downcase!
+                         end
+      end
     end
 
     # Choose the UUID generation algorithms
@@ -152,6 +202,22 @@ module Couchbase
       end
     end
 
+    def self.view(*names)
+      options = {}
+      if names.last.is_a?(Hash)
+        options = names.pop
+      end
+      names.each do |name|
+        views << name
+        self.instance_eval <<-EOV, __FILE__, __LINE__ + 1
+          def #{name}(params = {})
+            View.new(bucket, "_design/\#{design_document}/_view/#{name}",
+                     params.merge(:wrapper_class => self, :include_docs => true))
+          end
+        EOV
+      end
+    end
+
     # Find the model using +id+ attribute
     #
     # @since 0.0.1
@@ -163,8 +229,9 @@ module Couchbase
     # @example Find model using +id+
     #   post = Post.find('the-id')
     def self.find(id)
-      if id && (obj = bucket.get(id, :quiet => false))
-        new({:id => id}.merge(obj))
+      if id && (res = bucket.get(id, :quiet => false, :extended => true))
+        obj, flags, cas = res
+        new({:id => id, :_meta => {'flags' => flags, 'cas' => cas}}.merge(obj))
       end
     end
 
@@ -179,8 +246,9 @@ module Couchbase
     # @example Find model using +id+
     #   post = Post.find_by_id('the-id')
     def self.find_by_id(id)
-      if id && (obj = bucket.get(id, :quiet => true))
-        new({:id => id}.merge(obj))
+      if id && (res = bucket.get(id, :quiet => true))
+        obj, flags, cas = res
+        new({:id => id, :_meta => {'flags' => flags, 'cas' => cas}}.merge(obj))
       end
     end
 
@@ -202,7 +270,14 @@ module Couchbase
     #
     # @param [Hash] attrs attribute-value pairs
     def initialize(attrs = {})
-      @id = nil
+      if attrs.respond_to?(:with_indifferent_access)
+        attrs = attrs.with_indifferent_access
+      end
+      @id = attrs.delete(:id)
+      @_key = attrs.delete(:_key)
+      @_value = attrs.delete(:_value)
+      @_doc = attrs.delete(:_doc)
+      @_meta = attrs.delete(:_meta)
       @_attributes = ::Hash.new do |h, k|
         default = self.class.attributes[k]
         h[k] = if default.respond_to?(:call)
@@ -211,7 +286,7 @@ module Couchbase
                  default
                end
       end
-      update_attributes(attrs)
+      update_attributes(@_doc || attrs)
     end
 
     # Create this model and assign new id if necessary
@@ -312,7 +387,7 @@ module Couchbase
       model.exists?(@id)
     end
 
-    # All the defined attributes within a class.
+    # All defined attributes within a class.
     #
     # @since 0.0.1
     #
@@ -321,6 +396,17 @@ module Couchbase
     # @return [Hash]
     def self.attributes
       @@attributes[self]
+    end
+
+    # All defined views within a class.
+    #
+    # @since 0.1.0
+    #
+    # @see Model.view
+    #
+    # @return [Array]
+    def self.views
+      @@views[self]
     end
 
     # All the attributes of the current instance
@@ -342,7 +428,8 @@ module Couchbase
         @id = id
       end
       attrs.each do |key, value|
-        send(:"#{key}=", value)
+        setter = :"#{key}="
+        send(setter, value) if respond_to?(setter)
       end
     end
 
@@ -391,14 +478,35 @@ module Couchbase
       self.class
     end
 
-    # @private Wrap the hash to the model class
+    # @private Wrap the hash to the model class.
     #
     # @since 0.0.1
     #
-    # @param [Model, Hash] the Couchbase::Model subclass or the
-    #   attribute-value pairs
-    def self.wrap(object)
-      object.class == self ? object : new(object)
+    # @param [Bucket] bucket the reference to Bucket instance
+    # @param [Hash] data the Hash fetched by View, it should have at least
+    #   +"id"+, +"key"+ and +"value"+ keys, also it could have optional
+    #   +"doc"+ key.
+    #
+    # @return [Model]
+    def self.wrap(bucket, data)
+      doc = {
+        :_key => data['key'],
+        :_value => data['value'],
+        :_meta => {},
+        :id => data['id']
+      }
+      if doc[:_value].is_a?(Hash) && (_id = doc[:_value]['_id'])
+        doc[:id] = _id
+      end
+      if data['doc']
+        data['doc'].keys.each do |key|
+          if key.start_with?("$")
+            doc[:_meta][key.sub(/^\$/, '')] = data['doc'].delete(key)
+          end
+        end
+        doc.update(data['doc'])
+      end
+      new(doc)
     end
 
     # @private Returns a string containing a human-readable representation
@@ -406,12 +514,12 @@ module Couchbase
     #
     # @since 0.0.1
     def inspect
-      attrs = model.attributes.sort.map do |attr|
-        [attr, @_attributes[attr].inspect]
-      end
+      attrs = model.attributes.map do |attr, default|
+        [attr.to_s, @_attributes[attr].inspect]
+      end.sort
       sprintf("#<%s:%s %s>",
               model, new? ? "?" : id,
-              attrs.map{|a| a.join("=")}.join(" "))
+              attrs.map{|a| a.join("=")}.join(", "))
     end
 
     protected
