@@ -203,9 +203,12 @@ module Couchbase
         end
       end
       doc['signature'] = digest.to_s
-      current_doc = bucket.design_docs[design_document.to_s]
-      if current_doc.nil? || current_doc['signature'] != doc['signature']
-        bucket.save_design_doc(doc)
+      if doc['signature'] != self.thread_storage[:signature]
+        self.thread_storage[:signature] = doc['signature']
+        current_doc = bucket.design_docs[design_document.to_s]
+        if current_doc.nil? || current_doc['signature'] != doc['signature']
+          bucket.save_design_doc(doc)
+        end
       end
     end
 
