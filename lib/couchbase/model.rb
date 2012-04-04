@@ -210,6 +210,7 @@ module Couchbase
         current_doc = bucket.design_docs[design_document.to_s]
         if current_doc.nil? || (current_doc['signature'] != doc['signature'] && doc['timestamp'] > current_doc[:timestamp].to_i)
           bucket.save_design_doc(doc)
+          current_doc = doc
         end
         thread_storage[:signature] = current_doc['signature']
         thread_storage[:timestamp] = current_doc['timestamp'].to_i
