@@ -254,6 +254,7 @@ module Couchbase
         options = names.pop
       end
       names.each do |name|
+        name = name.to_sym
         define_method(name) do
           @_attributes[name]
         end
