@@ -189,6 +189,7 @@ module Couchbase
 
       doc = {'_id' => "_design/#{design_document}", 'views' => {}}
       digest = Digest::MD5.new
+      mtime = 0
       views.each do |name|
         doc['views'][name] = view = {}
         ['map', 'reduce'].each do |type|
@@ -196,6 +197,7 @@ module Couchbase
             ff = File.join(path, design_document.to_s, name.to_s, "#{type}.js")
             if File.file?(ff)
               view[type] = File.read(ff)
+              mtime = [mtime, File.mtime(ff).to_i].max
               digest << view[type]
               break # pick first matching file
             end
@@ -203,12 +205,14 @@ module Couchbase
         end
       end
       doc['signature'] = digest.to_s
-      if doc['signature'] != self.thread_storage[:signature]
-        self.thread_storage[:signature] = doc['signature']
+      doc['timestamp'] = mtime
+      if doc['signature'] != thread_storage[:signature] && doc['timestamp'] > thread_storage[:timestamp].to_i
         current_doc = bucket.design_docs[design_document.to_s]
-        if current_doc.nil? || current_doc['signature'] != doc['signature']
+        if current_doc.nil? || (current_doc['signature'] != doc['signature'] && doc['timestamp'] > current_doc[:timestamp].to_i)
           bucket.save_design_doc(doc)
         end
+        thread_storage[:signature] = current_doc['signature']
+        thread_storage[:timestamp] = current_doc['timestamp'].to_i
       end
     end
 
