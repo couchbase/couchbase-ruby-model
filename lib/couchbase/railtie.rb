@@ -92,10 +92,12 @@ module Rails #:nodoc:
       # After initialization we will warn the user if we can't find a couchbase.yml and
       # alert to create one.
       initializer "couchbase.warn_configuration_missing" do
-        config.after_initialize do
-          unless Rails.root.join("config", "couchbase.yml").file?
-            puts "\nCouchbase config not found. Create a config file at: config/couchbase.yml"
-            puts "to generate one run: rails generate couchbase:config\n\n"
+        unless ARGV.include?("couchbase:config")
+          config.after_initialize do
+            unless Rails.root.join("config", "couchbase.yml").file?
+              puts "\nCouchbase config not found. Create a config file at: config/couchbase.yml"
+              puts "to generate one run: rails generate couchbase:config\n\n"
+            end
           end
         end
       end
