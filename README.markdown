@@ -1,6 +1,42 @@
 # Couchbase Model [![Build Status](https://secure.travis-ci.org/avsej/ruby-couchbase-model.png?branch=master)](http://travis-ci.org/avsej/ruby-couchbase-model)
 
-This library allows to declare models for [couchbase gem][1]. Here are example:
+
+This library allows to declare models for [couchbase gem][1].
+
+## Rails integration
+
+To generate config you can use `rails generate couchbase:config`:
+
+    $ rails generate couchbase:config
+    create  config/couchbase.yml
+
+It will generate this `config/couchbase.yml` for you:
+
+    common: &common
+      hostname: localhost
+      port: 8091
+      username:
+      password:
+      pool: default
+
+    development:
+      <<: *common
+      bucket: couchbase_tinyurl_development
+
+    test:
+      <<: *common
+      bucket: couchbase_tinyurl_test
+
+    # set these environment variables on your production server
+    production:
+      hostname: <%= ENV['COUCHBASE_HOST'] %>
+      port: <%= ENV['COUCHBASE_PORT'] %>
+      username: <%= ENV['COUCHBASE_USERNAME'] %>
+      password: <%= ENV['COUCHBASE_PASSWORD'] %>
+      pool: <%= ENV['COUCHBASE_POOL'] %>
+      bucket: <%= ENV['COUCHBASE_BUCKET'] %>
+
+## Examples
 
     require 'couchbase/model'
 
@@ -48,4 +84,58 @@ You can define connection options on per model basis:
       connect :port => 80, :bucket => 'blog'
     end
 
+## Views (aka Map/Reduce queries to Couchbase)
+
+Views are stored in models directory in subdirectory named after the
+model (to be precious `design_document` attribute of the model class).
+Here is an example of directory layout for `Link` model with three
+views.
+
+    .
+    └── app
+        └── models
+            ├── link
+            │   ├── total_count
+            │   │   ├── map.js
+            │   │   └── reduce.js
+            │   ├── by_created_at
+            │   │   └── map.js
+            │   └── by_view_count
+            │       └── map.js
+            └── link.rb
+
+To generate view you can use yet another generator `rails generate
+couchbase:view DESIGNDOCNAME VIEWNAME`. For example how `total_count`
+view could be generated:
+
+    $ rails generate link total_count
+
+The generated files contains useful info and links about how to write
+map and reduce functions, you can take a look at them in the [templates
+directory][2].
+
+In the model class you should declare accessible views:
+
+    class Post < Couchbase::Model
+      attribute :title
+      attribute :body
+      attribute :draft
+      attribute :view_count
+      attribute :created_at, :default => lambda { Time.now }
+
+      view :total_count, :by_created_at, :by_view_count
+    end
+
+And request them later:
+
+    Post.by_created_at(:include_docs => true).each do |post|
+      puts post.title
+    end
+
+    Post.by_view_count(:include_docs => true).group_by(&:view_count) do |count, posts|
+      p "#{count} -> #{posts.map{|pp| pp.inspect}.join(', ')}"
+    end
+
+
 [1]: https://github.com/couchbase/couchbase-ruby-client/
+[2]: https://github.com/couchbaselabs/ruby-couchbase-model/tree/master/lib/rails/generators/couchbase/view/templates/
