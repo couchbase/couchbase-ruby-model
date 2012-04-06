@@ -22,7 +22,6 @@ def gemspec
 end
 
 Gem::PackageTask.new(gemspec) do |pkg|
-  pkg.need_zip = true
   pkg.need_tar = true
 end
 
