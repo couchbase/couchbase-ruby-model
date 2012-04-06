@@ -590,6 +590,14 @@ module Couchbase
               attrs.map{|a| a.join("=")}.join(", "))
     end
 
+    def self.inspect
+      buf = "#{name}"
+      if self != Couchbase::Model
+        buf << "(#{['id', attributes.map(&:first)].flatten.join(', ')})"
+      end
+      buf
+    end
+
     protected
 
     # @private Returns a hash with model attributes
