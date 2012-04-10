@@ -21,7 +21,7 @@ class Post < Couchbase::Model
   attribute :title
   attribute :body
   attribute :author, :default => 'Anonymous'
-  attribute :created_at, :default => lambda { Time.new("2010-01-01") }
+  attribute :created_at, :default => lambda { Time.utc("2010-01-01") }
 end
 
 class TestModel < MiniTest::Unit::TestCase
@@ -52,7 +52,7 @@ class TestModel < MiniTest::Unit::TestCase
 
   def test_allows_lambda_as_default_value
     post = Post.new(:title => "Hello, world")
-    expected = Time.new("2010-01-01")
+    expected = Time.utc("2010-01-01")
     assert_equal expected, post.created_at
     assert_equal expected, post.attributes[:created_at]
   end
