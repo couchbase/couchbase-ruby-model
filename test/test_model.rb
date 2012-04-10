@@ -139,7 +139,9 @@ class TestModel < MiniTest::Unit::TestCase
   def test_deletes_an_existent_model
     post = Post.create(:id => uniq_id)
     assert post.delete
-    refute Post.bucket.get(uniq_id)
+    assert_raises Couchbase::Error::NotFound do
+      Post.bucket.get(uniq_id)
+    end
   end
 
   def test_fails_to_delete_model_without_id
