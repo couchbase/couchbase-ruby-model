@@ -83,7 +83,7 @@ You can define connection options on per model basis:
       connect :port => 80, :bucket => 'blog'
     end
 
-## Views (aka Map/Reduce queries to Couchbase)
+## Views (aka Map/Reduce indexes)
 
 Views are stored in models directory in subdirectory named after the
 model (to be precious `design_document` attribute of the model class).
