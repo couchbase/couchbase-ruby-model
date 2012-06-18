@@ -107,9 +107,9 @@ module Rails #:nodoc:
 
       # Check (and upgrade if needed) all design documents
       initializer "couchbase.upgrade_design_documents", :after =>"couchbase.setup_connection"  do |app|
+        ::Couchbase::Model::Configuration.design_documents_paths ||= app.config.paths["app/models"]
         if config.couchbase.ensure_design_documents
           config.to_prepare do
-            ::Couchbase::Model::Configuration.design_documents_paths ||= app.config.paths["app/models"]
             app.config.paths["app/models"].each do |path|
               Dir.glob("#{path}/**/*.rb").sort.each do |file|
                 require_dependency(file.gsub("#{path}/" , "").gsub(".rb", ""))
