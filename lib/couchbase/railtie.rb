@@ -23,6 +23,9 @@ module Rails #:nodoc:
   module Couchbase #:nodoc:
     class Railtie < Rails::Railtie #:nodoc:
 
+      config.couchbase = ActiveSupport::OrderedOptions.new
+      config.couchbase.ensure_design_documents ||= true
+
       # Determine which generator to use. app_generators was introduced after
       # 3.0.0.
       #
@@ -104,19 +107,21 @@ module Rails #:nodoc:
 
       # Check (and upgrade if needed) all design documents
       initializer "couchbase.upgrade_design_documents", :after =>"couchbase.setup_connection"  do |app|
-        config.to_prepare do
-          ::Couchbase::Model::Configuration.design_documents_paths ||= app.config.paths["app/models"]
-          app.config.paths["app/models"].each do |path|
-            Dir.glob("#{path}/**/*.rb").sort.each do |file|
-              require_dependency(file.gsub("#{path}/" , "").gsub(".rb", ""))
+        ::Couchbase::Model::Configuration.design_documents_paths ||= app.config.paths["app/models"]
+        if config.couchbase.ensure_design_documents
+          config.to_prepare do
+            app.config.paths["app/models"].each do |path|
+              Dir.glob("#{path}/**/*.rb").sort.each do |file|
+                require_dependency(file.gsub("#{path}/" , "").gsub(".rb", ""))
+              end
             end
-          end
-          begin
-            ::Couchbase::Model.descendants.each do |model|
-              model.ensure_design_document!
+            begin
+              ::Couchbase::Model.descendants.each do |model|
+                model.ensure_design_document!
+              end
+            rescue ::Couchbase::Error::Timeout, ::Couchbase::Error::Connect
+              # skip connection errors for now
             end
-          rescue ::Couchbase::Error::Timeout, ::Couchbase::Error::Connect
-            # skip connection errors for now
           end
         end
       end
