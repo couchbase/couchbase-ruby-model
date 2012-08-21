@@ -86,17 +86,17 @@ module Couchbase
     # @since 0.0.1
     attr_accessor :id
 
-    # @since 0.1.0
-    attr_reader :_key
+    # @since 0.2.0
+    attr_reader :key
 
-    # @since 0.1.0
-    attr_reader :_value
+    # @since 0.2.0
+    attr_reader :value
 
-    # @since 0.1.0
-    attr_reader :_doc
+    # @since 0.2.0
+    attr_reader :doc
 
-    # @since 0.1.0
-    attr_reader :_meta
+    # @since 0.2.0
+    attr_reader :meta
 
     # @private Container for all attributes with defaults of all subclasses
     @@attributes = ::Hash.new {|hash, key| hash[key] = {}}
@@ -264,14 +264,15 @@ module Couchbase
         options = names.pop
       end
       names.each do |name|
+        attributes[name] = options[:default]
         name = name.to_sym
+        next if self.instance_methods.include?(name)
         define_method(name) do
           @_attributes[name]
         end
         define_method(:"#{name}=") do |value|
           @_attributes[name] = value
         end
-        attributes[name] = options[:default]
       end
     end
 
@@ -319,7 +320,7 @@ module Couchbase
     def self.find(id)
       if id && (res = bucket.get(id, :quiet => false, :extended => true))
         obj, flags, cas = res
-        new({:id => id, :_meta => {'flags' => flags, 'cas' => cas}}.merge(obj))
+        new({:id => id, :meta => {'flags' => flags, 'cas' => cas}}.merge(obj))
       end
     end
 
@@ -336,7 +337,7 @@ module Couchbase
     def self.find_by_id(id)
       if id && (res = bucket.get(id, :quiet => true))
         obj, flags, cas = res
-        new({:id => id, :_meta => {'flags' => flags, 'cas' => cas}}.merge(obj))
+        new({:id => id, :meta => {'flags' => flags, 'cas' => cas}}.merge(obj))
       end
     end
 
@@ -362,10 +363,10 @@ module Couchbase
         attrs = attrs.with_indifferent_access
       end
       @id = attrs.delete(:id)
-      @_key = attrs.delete(:_key)
-      @_value = attrs.delete(:_value)
-      @_doc = attrs.delete(:_doc)
-      @_meta = attrs.delete(:_meta)
+      @key = attrs.delete(:key)
+      @value = attrs.delete(:value)
+      @doc = attrs.delete(:doc)
+      @meta = attrs.delete(:meta)
       @_attributes = ::Hash.new do |h, k|
         default = self.class.attributes[k]
         h[k] = if default.respond_to?(:call)
@@ -374,7 +375,7 @@ module Couchbase
                  default
                end
       end
-      update_attributes(@_doc || attrs)
+      update_attributes(@doc || attrs)
     end
 
     # Create this model and assign new id if necessary
@@ -579,12 +580,12 @@ module Couchbase
     def self.wrap(bucket, data)
       doc = {
         :id => data['id'],
-        :_key => data['key'],
-        :_value => data['value']
+        :key => data['key'],
+        :value => data['value']
       }
       if data['doc']
-        doc[:_meta] = data['doc']['meta']
-        doc[:_doc] = data['doc']['json']
+        doc[:meta] = data['doc']['meta']
+        doc[:doc] = data['doc']['json']
       end
       new(doc)
     end
@@ -595,8 +596,8 @@ module Couchbase
     # @since 0.0.1
     def inspect
       attrs = []
-      attrs << [:_key, @_key.inspect] unless @_key.nil?
-      attrs << [:_value, @_value.inspect] unless @_value.nil?
+      attrs << ["key", @key.inspect] unless @key.nil?
+      attrs << ["value", @value.inspect] unless @value.nil?
       model.attributes.map do |attr, default|
         val = @_attributes[attr]
         attrs << [attr.to_s, val.inspect] unless val.nil?
