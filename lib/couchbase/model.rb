@@ -102,7 +102,7 @@ module Couchbase
     @@attributes = ::Hash.new {|hash, key| hash[key] = {}}
 
     # @private Container for all view names of all subclasses
-    @@views = ::Hash.new {|hash, key| hash[key] = []}
+    @@views = ::Hash.new {|hash, key| hash[key] = {}}
 
     # Use custom connection options
     #
@@ -194,21 +194,31 @@ module Couchbase
       doc = {'_id' => "_design/#{design_document}", 'views' => {}}
       digest = Digest::MD5.new
       mtime = 0
-      views.each do |name|
-        doc['views'][name] = view = {}
-        ['map', 'reduce'].each do |type|
+      views.each do |name, _|
+        doc['views'][name] = {}
+        doc['spatial'] = {}
+        ['map', 'reduce', 'spatial'].each do |type|
           Configuration.design_documents_paths.each do |path|
             ff = File.join(path, design_document.to_s, name.to_s, "#{type}.js")
             if File.file?(ff)
-              view[type] = File.read(ff).strip
+              contents = File.read(ff).strip
+              next if contents.empty?
               mtime = [mtime, File.mtime(ff).to_i].max
-              digest << view[type]
+              digest << contents
+              case type
+              when 'map', 'reduce'
+                doc['views'][name][type] = contents
+              when 'spatial'
+                doc['spatial'][name] = contents
+              end
               break # pick first matching file
             end
           end
         end
-        doc['views'].delete(name) if view.empty?
       end
+
+      doc['views'].delete_if {|_, v| v.empty? }
+      doc.delete('spatial') if doc['spatial'].empty?
       doc['signature'] = digest.to_s
       doc['timestamp'] = mtime
       if doc['signature'] != thread_storage[:signature] && doc['timestamp'] > thread_storage[:timestamp].to_i
@@ -298,12 +308,14 @@ module Couchbase
       if names.last.is_a?(Hash)
         options.update(names.pop)
       end
+      is_spatial = options.delete(:spatial)
       names.each do |name|
-        views << name
-        singleton_class.send(:define_method, name) do |*params|
+        path = "_design/%s/_%s/%s" % [design_document, is_spatial ? "spatial" : "view", name]
+        views[name] = lambda do |*params|
           params = options.merge(params.first || {})
-          View.new(bucket, "_design/#{design_document}/_view/#{name}", params)
+          View.new(bucket, path, params)
         end
+        singleton_class.send(:define_method, name, &views[name])
       end
     end
 
