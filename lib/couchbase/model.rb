@@ -22,6 +22,10 @@ require 'couchbase/model/version'
 require 'couchbase/model/uuid'
 require 'couchbase/model/configuration'
 
+unless Object.respond_to?(:singleton_class)
+  require 'couchbase/model/ext/singleton_class'
+end
+
 module Couchbase
 
   # @since 0.0.1
@@ -271,19 +275,34 @@ module Couchbase
       end
     end
 
+    # Defines a view for the model
+    #
+    # @since 0.0.1
+    #
+    # @param [Symbol, String, Array] names names of the views
+    # @param [Hash] options options passed to the {Couchbase::View}
+    #
+    # @example Define some views for a model
+    #  class Post < Couchbase::Model
+    #    view :all, :published
+    #    view :by_rating, :include_docs => false
+    #  end
+    #
+    #  post = Post.find("hello")
+    #  post.by_rating.each do |r|
+    #    # ...
+    #  end
     def self.view(*names)
-      options = {}
+      options = {:wrapper_class => self, :include_docs => true}
       if names.last.is_a?(Hash)
-        options = names.pop
+        options.update(names.pop)
       end
       names.each do |name|
         views << name
-        self.instance_eval <<-EOV, __FILE__, __LINE__ + 1
-          def #{name}(params = {})
-            View.new(bucket, "_design/\#{design_document}/_view/#{name}",
-                     params.merge(:wrapper_class => self, :include_docs => true))
-          end
-        EOV
+        singleton_class.send(:define_method, name) do |*params|
+          params = options.merge(params.first || {})
+          View.new(bucket, "_design/#{design_document}/_view/#{name}", params)
+        end
       end
     end
 
