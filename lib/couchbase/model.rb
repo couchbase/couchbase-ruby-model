@@ -196,7 +196,7 @@ module Couchbase
           Configuration.design_documents_paths.each do |path|
             ff = File.join(path, design_document.to_s, name.to_s, "#{type}.js")
             if File.file?(ff)
-              view[type] = File.read(ff)
+              view[type] = File.read(ff).strip
               mtime = [mtime, File.mtime(ff).to_i].max
               digest << view[type]
               break # pick first matching file
