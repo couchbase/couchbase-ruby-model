@@ -594,12 +594,16 @@ module Couchbase
     #
     # @since 0.0.1
     def inspect
-      attrs = model.attributes.map do |attr, default|
-        [attr.to_s, @_attributes[attr].inspect]
-      end.sort
-      sprintf("#<%s:%s %s>",
-              model, new? ? "?" : id,
-              attrs.map{|a| a.join("=")}.join(", "))
+      attrs = []
+      attrs << [:_key, @_key.inspect] unless @_key.nil?
+      attrs << [:_value, @_value.inspect] unless @_value.nil?
+      model.attributes.map do |attr, default|
+        val = @_attributes[attr]
+        attrs << [attr.to_s, val.inspect] unless val.nil?
+      end
+      attrs.sort!
+      attrs.unshift([:id, id]) unless new?
+      sprintf("#<%s %s>", model, attrs.map{|a| a.join(": ")}.join(", "))
     end
 
     def self.inspect
