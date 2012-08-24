@@ -203,6 +203,7 @@ module Couchbase
             end
           end
         end
+        doc['views'].delete(name) if view.empty?
       end
       doc['signature'] = digest.to_s
       doc['timestamp'] = mtime
