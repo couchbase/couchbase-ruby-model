@@ -558,21 +558,13 @@ module Couchbase
     # @return [Model]
     def self.wrap(bucket, data)
       doc = {
+        :id => data['id'],
         :_key => data['key'],
-        :_value => data['value'],
-        :_meta => {},
-        :id => data['id']
+        :_value => data['value']
       }
-      if doc[:_value].is_a?(Hash) && (_id = doc[:_value]['_id'])
-        doc[:id] = _id
-      end
       if data['doc']
-        data['doc'].keys.each do |key|
-          if key.start_with?("$")
-            doc[:_meta][key.sub(/^\$/, '')] = data['doc'].delete(key)
-          end
-        end
-        doc.update(data['doc'])
+        doc[:_meta] = data['doc']['meta']
+        doc[:_doc] = data['doc']['json']
       end
       new(doc)
     end
