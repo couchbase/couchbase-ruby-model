@@ -447,15 +447,16 @@ module Couchbase
     #
     # @since 0.0.1
     #
+    # @param [Bignum] cas CAS value
     # @return [Couchbase::Model] The saved object
     #
     # @example Update the Post model
     #   p = Post.find('hello-world')
     #   p.draft = false
     #   p.save
-    def save
+    def save(cas = nil)
       return create if new?
-      model.bucket.set(@id, attributes_with_values)
+      model.bucket.set(@id, attributes_with_values, :cas => cas)
       self
     end
 
@@ -465,10 +466,11 @@ module Couchbase
     #
     # @param [Hash] attrs Attribute value pairs to use for the updated
     #               version
+    # @param [Bignum] cas CAS value
     # @return [Couchbase::Model] The updated object
-    def update(attrs)
+    def update(attrs, cas = nil)
       update_attributes(attrs)
-      save
+      save(cas)
     end
 
     # Delete this object from the bucket
@@ -477,12 +479,13 @@ module Couchbase
     #
     # @note This method will reset +id+ attribute
     #
+    # @param [Bignum] cas CAS value
     # @return [Couchbase::Model] Returns a reference of itself.
     #
     # @example Delete the Post model
     #   p = Post.find('hello-world')
     #   p.delete
-    def delete
+    def delete(cas = nil)
       raise Couchbase::Error::MissingId, "missing id attribute" unless @id
       model.bucket.delete(@id)
       @id = nil
