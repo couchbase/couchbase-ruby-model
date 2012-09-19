@@ -456,7 +456,7 @@ module Couchbase
     #   p.save
     def save(cas = nil)
       return create if new?
-      model.bucket.set(@id, attributes_with_values, :cas => cas)
+      model.bucket.replace(@id, attributes_with_values, :cas => cas)
       self
     end
 
