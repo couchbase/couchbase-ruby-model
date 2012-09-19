@@ -25,6 +25,12 @@ require 'couchbase/model/configuration'
 unless Object.respond_to?(:singleton_class)
   require 'couchbase/model/ext/singleton_class'
 end
+unless "".respond_to?(:constantize)
+  require 'couchbase/model/ext/constantize'
+end
+unless "".respond_to?(:camelize)
+  require 'couchbase/model/ext/camelize'
+end
 
 module Couchbase
 
@@ -274,8 +280,8 @@ module Couchbase
         options = names.pop
       end
       names.each do |name|
-        attributes[name] = options[:default]
         name = name.to_sym
+        attributes[name] = options[:default]
         next if self.instance_methods.include?(name)
         define_method(name) do
           @_attributes[name]
@@ -316,6 +322,35 @@ module Couchbase
           View.new(bucket, path, params)
         end
         singleton_class.send(:define_method, name, &views[name])
+      end
+    end
+
+    # Defines a belongs_to association for the model
+    #
+    # @since 0.3.0
+    #
+    # @param [Symbol, String] name name of the associated model
+    # @param [Hash] options association options
+    # @option options [String, Symbol] :class_name the name of the
+    #   association class
+    #
+    # @example Define some association for a model
+    #  class Brewery < Couchbase::Model
+    #    attribute :name
+    #  end
+    #
+    #  class Beer < Couchbase::Model
+    #    attribute :name, :brewery_id
+    #    belongs_to :brewery
+    #  end
+    #
+    #  Beer.find("heineken").brewery.name
+    def self.belongs_to(name, options = {})
+      ref = "#{name}_id"
+      attribute(ref)
+      assoc = name.to_s.camelize.constantize
+      define_method(name) do
+        assoc.find(self.send(ref))
       end
     end
 

@@ -24,6 +24,15 @@ class Post < Couchbase::Model
   attribute :created_at, :default => lambda { Time.utc("2010-01-01") }
 end
 
+class Brewery < Couchbase::Model
+  attribute :name
+end
+
+class Beer < Couchbase::Model
+  attribute :name
+  belongs_to :brewery
+end
+
 class TestModel < MiniTest::Unit::TestCase
 
   def setup
@@ -103,9 +112,9 @@ class TestModel < MiniTest::Unit::TestCase
     EOC
 
     comment = Comment.new
-    assert comment.respond_to?(:name)
-    assert comment.respond_to?(:email)
-    assert comment.respond_to?(:body)
+    assert_respond_to comment, :name
+    assert_respond_to comment, :email
+    assert_respond_to comment, :body
   end
 
   def test_allows_arbitrary_ids
@@ -150,6 +159,16 @@ class TestModel < MiniTest::Unit::TestCase
     assert_raises Couchbase::Error::MissingId do
       post.delete
     end
+  end
+
+  def test_belongs_to_assoc
+    brewery = Brewery.create(:name => "Anheuser-Busch")
+    assert_includes Beer.attributes.keys, :brewery_id
+    beer = Beer.create(:name => "Budweiser", :brewery_id => brewery.id)
+    assert_respond_to beer, :brewery
+    assoc = beer.brewery
+    assert_instance_of Brewery, assoc
+    assert_equal "Anheuser-Busch", assoc.name
   end
 
 end
