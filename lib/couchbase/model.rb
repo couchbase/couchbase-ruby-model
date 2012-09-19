@@ -502,6 +502,11 @@ module Couchbase
       !@id
     end
 
+    # @return [true, false] Where on on this object persisted in the storage
+    def persisted?
+      !!@id
+    end
+
     # Check if the key exists in the bucket
     #
     # @since 0.0.1
