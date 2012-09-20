@@ -670,8 +670,6 @@ module Couchbase
       buf
     end
 
-    protected
-
     # @private Returns a hash with model attributes
     #
     # @since 0.1.0
@@ -682,6 +680,24 @@ module Couchbase
       end
       ret
     end
+
+    protected :attributes_with_values
+
+    if defined?(::Rails)
+      extend ActiveModel::Callbacks
+      define_model_callbacks :create, :update, :delete, :save
+      [:save, :create, :update, :delete].each do |meth|
+        class_eval <<-EOC
+          alias #{meth}_without_callbacks #{meth}
+          def #{meth}(*args, &block)
+            run_callbacks(:#{meth}) do
+              #{meth}_without_callbacks(*args, &block)
+            end
+          end
+        EOC
+      end
+    end
+
   end
 
 end
