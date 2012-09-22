@@ -163,6 +163,14 @@ module Couchbase
       end
     end
 
+    def self.defaults(options = nil)
+      if options
+        @_defaults = options
+      else
+        @_defaults || {}
+      end
+    end
+
     # Ensure that design document is up to date.
     #
     # @since 0.1.0
@@ -406,23 +414,28 @@ module Couchbase
     #
     # @param [Hash] attrs attribute-value pairs
     def initialize(attrs = {})
-      if attrs.respond_to?(:with_indifferent_access)
-        attrs = attrs.with_indifferent_access
+      case attrs
+      when Hash, HashWithIndifferentAccess
+        if attrs.respond_to?(:with_indifferent_access)
+          attrs = attrs.with_indifferent_access
+        end
+        @id = attrs.delete(:id)
+        @key = attrs.delete(:key)
+        @value = attrs.delete(:value)
+        @doc = attrs.delete(:doc)
+        @meta = attrs.delete(:meta)
+        @_attributes = ::Hash.new do |h, k|
+          default = self.class.attributes[k]
+          h[k] = if default.respond_to?(:call)
+                  default.call
+                else
+                  default
+                end
+        end
+        update_attributes(@doc || attrs)
+      else
+        @_raw = attrs
       end
-      @id = attrs.delete(:id)
-      @key = attrs.delete(:key)
-      @value = attrs.delete(:value)
-      @doc = attrs.delete(:doc)
-      @meta = attrs.delete(:meta)
-      @_attributes = ::Hash.new do |h, k|
-        default = self.class.attributes[k]
-        h[k] = if default.respond_to?(:call)
-                 default.call
-               else
-                 default
-               end
-      end
-      update_attributes(@doc || attrs)
     end
 
     # Create this model and assign new id if necessary
@@ -439,7 +452,8 @@ module Couchbase
     #   p.create
     def create
       @id ||= Couchbase::Model::UUID.generator.next(1, model.thread_storage[:uuid_algorithm])
-      model.bucket.add(@id, attributes_with_values)
+      value = @_raw ? @_raw : attributes_with_values
+      model.bucket.add(@id, value, model.defaults)
       self
     end
 
@@ -456,7 +470,8 @@ module Couchbase
     #   p.save
     def save(cas = nil)
       return create if new?
-      model.bucket.replace(@id, attributes_with_values, :cas => cas)
+      value = @_raw ? @_raw : attributes_with_values
+      model.bucket.replace(@id, value, model.default.merge(:cas => cas))
       self
     end
 
