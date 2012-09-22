@@ -1,3 +1,12 @@
+## 0.3.0 / 2012-09-22
+
+* Implement belongs_to asscociation
+* Use ActiveModel naming and conversion
+* Define persisted? method
+* Allow optional CAS value for mutators
+* Use replace in save method. Thanks to @scalabl3
+* Add callbacks for :save, :create, :update and :delete methods
+
 ## 0.2.0 / 2012-09-18
 
 * Add Rails 3 configuration possibilities, allow configuring
