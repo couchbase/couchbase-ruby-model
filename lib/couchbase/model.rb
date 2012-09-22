@@ -224,7 +224,7 @@ module Couchbase
       end
 
       doc['views'].delete_if {|_, v| v.empty? }
-      doc.delete('spatial') if doc['spatial'].empty?
+      doc.delete('spatial') if doc['spatial'] && doc['spatial'].empty?
       doc['signature'] = digest.to_s
       doc['timestamp'] = mtime
       if doc['signature'] != thread_storage[:signature] && doc['timestamp'] > thread_storage[:timestamp].to_i
