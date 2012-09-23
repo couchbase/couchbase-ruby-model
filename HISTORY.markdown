@@ -1,3 +1,7 @@
+## 0.3.1 / 2012-09-22
+
+* Allow to specify default storage options
+
 ## 0.3.0 / 2012-09-22
 
 * Implement belongs_to asscociation
