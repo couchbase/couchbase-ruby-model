@@ -37,6 +37,15 @@ module Couchbase
   # @since 0.0.1
   class Error::MissingId < Error::Base; end
 
+  # @since 0.4.0
+  class Error::RecordInvalid < Error::Base
+    attr_reader :record
+    def initialize(record)
+      @record = record
+      super(@record.errors.full_messages.join(", "))
+    end
+  end
+
   # Declarative layer for Couchbase gem
   #
   # @since 0.0.1
@@ -414,6 +423,7 @@ module Couchbase
     #
     # @param [Hash] attrs attribute-value pairs
     def initialize(attrs = {})
+      @errors = ::ActiveModel::Errors.new(self) if defined?(::ActiveModel)
       case attrs
       when Hash, HashWithIndifferentAccess
         if attrs.respond_to?(:with_indifferent_access)
@@ -469,6 +479,9 @@ module Couchbase
     #   p.draft = false
     #   p.save
     def save(cas = nil)
+      if respond_to?(:valid?) && !valid?
+        raise Couchbase::Error::RecordInvalid.new(self)
+      end
       return create if new?
       value = @_raw ? @_raw : attributes_with_values
       model.bucket.replace(@id, value, model.default.merge(:cas => cas))

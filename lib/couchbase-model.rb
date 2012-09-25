@@ -24,5 +24,6 @@ if defined?(Rails)
   class Couchbase::Model
     extend ActiveModel::Naming
     include ActiveModel::Conversion
+    include ActiveModel::Validations
   end
 end
