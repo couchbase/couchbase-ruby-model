@@ -482,7 +482,7 @@ module Couchbase
       if respond_to?(:valid?) && !valid?
         raise Couchbase::Error::RecordInvalid.new(self)
       end
-      return create if new?
+      return create unless meta
       value = @_raw ? @_raw : attributes_with_values
       model.bucket.replace(@id, value, model.default.merge(:cas => cas))
       self
