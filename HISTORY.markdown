@@ -1,3 +1,8 @@
+## 0.4.0 / 2012-09-25
+
+* Add validation hooks for Rails application
+* Check meta presence as more robust indicator of key presence
+
 ## 0.3.1 / 2012-09-22
 
 * Allow to specify default storage options
