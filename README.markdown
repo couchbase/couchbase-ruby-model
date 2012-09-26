@@ -90,6 +90,17 @@ You can define connection options on per model basis:
       connect :port => 80, :bucket => 'blog'
     end
 
+## Validations
+
+There are all methods from ActiveModel::Validations accessible in
+context of rails application:
+
+    class Comment < Couchbase::Model
+      attribute :author, :body
+
+      validates_presence_of :author, :body
+    end
+
 ## Views (aka Map/Reduce indexes)
 
 Views are stored in models directory in subdirectory named after the
