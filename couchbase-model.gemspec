@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.version     = Couchbase::Model::VERSION
   s.author      = "Couchbase"
   s.email       = "support@couchbase.com"
-  s.homepage    = "https://github.com/couchbaselabs/ruby-couchbase-model"
+  s.homepage    = "https://github.com/couchbase/couchbase-ruby-model"
   s.summary     = %q{Declarative interface to Couchbase}
   s.description = %q{ORM-like interface allows you to persist your models to Couchbase}
 
