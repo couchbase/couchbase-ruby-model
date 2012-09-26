@@ -484,7 +484,7 @@ module Couchbase
       end
       return create unless meta
       value = @_raw ? @_raw : attributes_with_values
-      model.bucket.replace(@id, value, model.default.merge(:cas => cas))
+      model.bucket.replace(@id, value, model.defaults.merge(:cas => cas))
       self
     end
 
