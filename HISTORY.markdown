@@ -1,3 +1,10 @@
+## 0.4.1 / 2012-09-26
+
+* Put support notes in README
+* Add note about validations in the README
+* Update repo URL
+* RCBC-85 Fix typo in `save' method
+
 ## 0.4.0 / 2012-09-25
 
 * Add validation hooks for Rails application
