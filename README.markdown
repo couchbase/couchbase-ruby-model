@@ -2,6 +2,13 @@
 
 This library allows to declare models for [couchbase gem][1].
 
+## SUPPORT
+
+If you found an issue, please file it in our [JIRA][3]. Also you are
+always welcome on `#libcouchbase` channel at [freenode.net IRC servers][4].
+
+Documentation: [http://rdoc.info/gems/couchbase-model](http://rdoc.info/gems/couchbase-model)
+
 ## Rails integration
 
 To generate config you can use `rails generate couchbase:config`:
@@ -138,3 +145,5 @@ And request them later:
 
 [1]: https://github.com/couchbase/couchbase-ruby-client/
 [2]: https://github.com/couchbaselabs/ruby-couchbase-model/tree/master/lib/rails/generators/couchbase/view/templates/
+[3]: http://couchbase.com/issues/browse/RCBC
+[4]: http://freenode.net/irc_servers.shtml
