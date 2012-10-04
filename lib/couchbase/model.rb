@@ -463,7 +463,13 @@ module Couchbase
     def create
       @id ||= Couchbase::Model::UUID.generator.next(1, model.thread_storage[:uuid_algorithm])
       value = @_raw ? @_raw : attributes_with_values
-      model.bucket.add(@id, value, model.defaults)
+      unless @meta
+        @meta = {}
+        if @meta.respond_to?(:with_indifferent_access)
+          @meta = @meta.with_indifferent_access
+        end
+      end
+      @meta['cas'] = model.bucket.add(@id, value, model.defaults)
       self
     end
 
@@ -484,7 +490,13 @@ module Couchbase
       end
       return create unless meta
       value = @_raw ? @_raw : attributes_with_values
-      model.bucket.replace(@id, value, model.defaults.merge(:cas => cas))
+      unless @meta
+        @meta = {}
+        if @meta.respond_to?(:with_indifferent_access)
+          @meta = @meta.with_indifferent_access
+        end
+      end
+      @meta['cas'] = model.bucket.replace(@id, value, model.defaults.merge(:cas => cas))
       self
     end
 
@@ -517,6 +529,7 @@ module Couchbase
       raise Couchbase::Error::MissingId, "missing id attribute" unless @id
       model.bucket.delete(@id)
       @id = nil
+      @meta = nil
       self
     end
 
