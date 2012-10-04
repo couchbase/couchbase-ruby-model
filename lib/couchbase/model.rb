@@ -460,7 +460,7 @@ module Couchbase
     # @example Create the instance of the Post model
     #   p = Post.new(:title => 'Hello world', :draft => true)
     #   p.create
-    def create
+    def create(options = {})
       @id ||= Couchbase::Model::UUID.generator.next(1, model.thread_storage[:uuid_algorithm])
       value = @_raw ? @_raw : attributes_with_values
       unless @meta
@@ -469,7 +469,7 @@ module Couchbase
           @meta = @meta.with_indifferent_access
         end
       end
-      @meta['cas'] = model.bucket.add(@id, value, model.defaults)
+      @meta['cas'] = model.bucket.add(@id, value, model.defaults.merge(options))
       self
     end
 
@@ -477,14 +477,20 @@ module Couchbase
     #
     # @since 0.0.1
     #
-    # @param [Bignum] cas CAS value
+    # @param [Hash] options options for operation, see
+    #   {{Couchbase::Bucket#set}}
     # @return [Couchbase::Model] The saved object
     #
     # @example Update the Post model
     #   p = Post.find('hello-world')
     #   p.draft = false
     #   p.save
-    def save(cas = nil)
+    #
+    # @example Use CAS value for optimistic lock
+    #   p = Post.find('hello-world')
+    #   p.draft = false
+    #   p.save('cas' => p.meta['cas'])
+    def save(options = {})
       if respond_to?(:valid?) && !valid?
         raise Couchbase::Error::RecordInvalid.new(self)
       end
@@ -496,7 +502,7 @@ module Couchbase
           @meta = @meta.with_indifferent_access
         end
       end
-      @meta['cas'] = model.bucket.replace(@id, value, model.defaults.merge(:cas => cas))
+      @meta['cas'] = model.bucket.replace(@id, value, model.defaults.merge(options))
       self
     end
 
@@ -506,11 +512,12 @@ module Couchbase
     #
     # @param [Hash] attrs Attribute value pairs to use for the updated
     #               version
-    # @param [Bignum] cas CAS value
+    # @param [Hash] options options for operation, see
+    #   {{Couchbase::Bucket#set}}
     # @return [Couchbase::Model] The updated object
-    def update(attrs, cas = nil)
+    def update(attrs, options = {})
       update_attributes(attrs)
-      save(cas)
+      save(options)
     end
 
     # Delete this object from the bucket
@@ -519,15 +526,16 @@ module Couchbase
     #
     # @note This method will reset +id+ attribute
     #
-    # @param [Bignum] cas CAS value
+    # @param [Hash] options options for operation, see
+    #   {{Couchbase::Bucket#delete}}
     # @return [Couchbase::Model] Returns a reference of itself.
     #
     # @example Delete the Post model
     #   p = Post.find('hello-world')
     #   p.delete
-    def delete(cas = nil)
+    def delete(options = {})
       raise Couchbase::Error::MissingId, "missing id attribute" unless @id
-      model.bucket.delete(@id)
+      model.bucket.delete(@id, options)
       @id = nil
       @meta = nil
       self
