@@ -1,3 +1,10 @@
+## 0.4.2 / 2012-10-17
+
+* Update CAS value after mutation
+* Added ability to pass options to mutators. Thanks to @kierangraham
+* Always try to include Rails stuff into model
+* Use key if id is nil (makes sense for some view results)
+
 ## 0.4.1 / 2012-09-26
 
 * Put support notes in README
