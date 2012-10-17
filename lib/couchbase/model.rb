@@ -734,6 +734,10 @@ module Couchbase
 
     if defined?(::Rails)
       extend ActiveModel::Callbacks
+      extend ActiveModel::Naming
+      include ActiveModel::Conversion
+      include ActiveModel::Validations
+
       define_model_callbacks :create, :update, :delete, :save
       [:save, :create, :update, :delete].each do |meth|
         class_eval <<-EOC

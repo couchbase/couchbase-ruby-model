@@ -20,10 +20,4 @@ require 'couchbase/model'
 # If we are using Rails then we will include the Couchbase railtie.
 if defined?(Rails)
   require "couchbase/railtie"
-
-  class Couchbase::Model
-    extend ActiveModel::Naming
-    include ActiveModel::Conversion
-    include ActiveModel::Validations
-  end
 end
