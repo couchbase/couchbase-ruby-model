@@ -756,6 +756,13 @@ module Couchbase
       keys = [id || key]
       keys.empty? ? nil : keys
     end
+
+    def to_param
+      keys = to_key
+      if keys && !keys.empty?
+        keys.join("-")
+      end
+    end
   end
 
 end

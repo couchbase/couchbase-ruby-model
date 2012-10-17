@@ -176,4 +176,9 @@ class TestModel < MiniTest::Unit::TestCase
     assert_equal ["the-key"], Post.new(:key => "the-key").to_key
   end
 
+  def test_to_param
+    assert_equal "the-id", Post.new(:id => "the-id").to_param
+    assert_equal "the-key", Post.new(:key => ["the", "key"]).to_param
+  end
+
 end
