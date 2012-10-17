@@ -1,3 +1,7 @@
+## 0.4.3 / 2012-10-17
+
+* Make #to_param aware about keys
+
 ## 0.4.2 / 2012-10-17
 
 * Update CAS value after mutation
