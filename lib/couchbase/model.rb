@@ -751,6 +751,11 @@ module Couchbase
       end
     end
 
+    # Redefine (if exists) #to_key to use #key if #id is missing
+    def to_key
+      keys = [id || key]
+      keys.empty? ? nil : keys
+    end
   end
 
 end

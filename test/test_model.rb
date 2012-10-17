@@ -171,4 +171,9 @@ class TestModel < MiniTest::Unit::TestCase
     assert_equal "Anheuser-Busch", assoc.name
   end
 
+  def test_to_key
+    assert_equal ["the-id"], Post.new(:id => "the-id").to_key
+    assert_equal ["the-key"], Post.new(:key => "the-key").to_key
+  end
+
 end
