@@ -1,4 +1,4 @@
-## 0.4.3 / 2012-10-17
+## 0.4.4 / 2012-10-17
 
 * Make #to_param aware about keys
 
