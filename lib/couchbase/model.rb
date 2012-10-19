@@ -399,7 +399,7 @@ module Couchbase
     # @example Find model using +id+
     #   post = Post.find_by_id('the-id')
     def self.find_by_id(id)
-      if id && (res = bucket.get(id, :quiet => true))
+      if id && (res = bucket.get(id, :quiet => true, :extended => true))
         obj, flags, cas = res
         new({:id => id, :meta => {'flags' => flags, 'cas' => cas}}.merge(obj))
       end
