@@ -285,6 +285,14 @@ module Couchbase
       self.thread_storage[:uuid_algorithm] = algorithm
     end
 
+    def read_attribute(attr_name)
+      @_attributes[attr_name]
+    end
+
+    def write_attribute(attr_name, value)
+      @_attributes[attr_name] = value
+    end
+
     # Defines an attribute for the model
     #
     # @since 0.0.1
@@ -311,10 +319,10 @@ module Couchbase
         attributes[name] = options[:default]
         next if self.instance_methods.include?(name)
         define_method(name) do
-          @_attributes[name]
+          read_attribute(name)
         end
         define_method(:"#{name}=") do |value|
-          @_attributes[name] = value
+          write_attribute(name, value)
         end
       end
     end
@@ -715,7 +723,7 @@ module Couchbase
       attrs << ["key", @key.inspect] unless @key.nil?
       attrs << ["value", @value.inspect] unless @value.nil?
       model.attributes.map do |attr, default|
-        val = @_attributes[attr]
+        val = read_attribute(attr)
         attrs << [attr.to_s, val.inspect] unless val.nil?
       end
       attrs.sort!
@@ -737,7 +745,7 @@ module Couchbase
     def attributes_with_values
       ret = {:type => model.design_document}
       model.attributes.keys.each do |attr|
-        ret[attr] = @_attributes[attr]
+        ret[attr] = read_attribute(attr)
       end
       ret
     end
