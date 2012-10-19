@@ -42,7 +42,11 @@ module Couchbase
     attr_reader :record
     def initialize(record)
       @record = record
-      super(@record.errors.full_messages.join(", "))
+      if @record.errors
+        super(@record.errors.full_messages.join(", "))
+      else
+        super("Record invalid")
+      end
     end
   end
 
@@ -112,6 +116,9 @@ module Couchbase
 
     # @since 0.2.0
     attr_reader :meta
+
+    # @since 0.4.5
+    attr_reader :errors
 
     # @private Container for all attributes with defaults of all subclasses
     @@attributes = ::Hash.new {|hash, key| hash[key] = {}}
@@ -462,6 +469,9 @@ module Couchbase
     #   p.create
     def create(options = {})
       @id ||= Couchbase::Model::UUID.generator.next(1, model.thread_storage[:uuid_algorithm])
+      if respond_to?(:valid?) && !valid?
+        raise Couchbase::Error::RecordInvalid.new(self)
+      end
       value = @_raw ? @_raw : attributes_with_values
       unless @meta
         @meta = {}
@@ -491,17 +501,11 @@ module Couchbase
     #   p.draft = false
     #   p.save('cas' => p.meta['cas'])
     def save(options = {})
+      return create(options) unless @meta
       if respond_to?(:valid?) && !valid?
         raise Couchbase::Error::RecordInvalid.new(self)
       end
-      return create(options) unless meta
       value = @_raw ? @_raw : attributes_with_values
-      unless @meta
-        @meta = {}
-        if @meta.respond_to?(:with_indifferent_access)
-          @meta = @meta.with_indifferent_access
-        end
-      end
       @meta['cas'] = model.bucket.replace(@id, value, model.defaults.merge(options))
       self
     end

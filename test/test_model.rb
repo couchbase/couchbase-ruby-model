@@ -24,6 +24,14 @@ class Post < Couchbase::Model
   attribute :created_at, :default => lambda { Time.utc("2010-01-01") }
 end
 
+class ValidPost < Couchbase::Model
+  attribute :title
+
+  def valid?
+    title && !title.empty?
+  end
+end
+
 class Brewery < Couchbase::Model
   attribute :name
 end
@@ -37,8 +45,10 @@ class TestModel < MiniTest::Unit::TestCase
 
   def setup
     @mock = start_mock
-    Post.bucket = Couchbase.connect(:hostname => @mock.host,
-                                    :port => @mock.port)
+    bucket = Couchbase.connect(:hostname => @mock.host, :port => @mock.port)
+    [Post, ValidPost, Brewery, Beer].each do |model|
+      model.bucket = bucket
+    end
   end
 
   def teardown
@@ -179,6 +189,18 @@ class TestModel < MiniTest::Unit::TestCase
   def test_to_param
     assert_equal "the-id", Post.new(:id => "the-id").to_param
     assert_equal "the-key", Post.new(:key => ["the", "key"]).to_param
+  end
+
+  def test_validation
+    post = ValidPost.create(:title => 'Hello, World!')
+    assert post.valid?, "post with title should be valid"
+    post.title = nil
+    assert_raises(Couchbase::Error::RecordInvalid) do
+      post.save
+    end
+    assert_raises(Couchbase::Error::RecordInvalid) do
+      ValidPost.create(:title => nil)
+    end
   end
 
 end
