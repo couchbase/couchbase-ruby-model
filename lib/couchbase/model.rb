@@ -494,7 +494,7 @@ module Couchbase
       if respond_to?(:valid?) && !valid?
         raise Couchbase::Error::RecordInvalid.new(self)
       end
-      return create unless meta
+      return create(options) unless meta
       value = @_raw ? @_raw : attributes_with_values
       unless @meta
         @meta = {}
