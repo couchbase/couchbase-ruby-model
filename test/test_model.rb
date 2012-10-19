@@ -41,12 +41,16 @@ class Beer < Couchbase::Model
   belongs_to :brewery
 end
 
+class Attachment < Couchbase::Model
+  defaults :format => :plain
+end
+
 class TestModel < MiniTest::Unit::TestCase
 
   def setup
     @mock = start_mock
     bucket = Couchbase.connect(:hostname => @mock.host, :port => @mock.port)
-    [Post, ValidPost, Brewery, Beer].each do |model|
+    [Post, ValidPost, Brewery, Beer, Attachment].each do |model|
       model.bucket = bucket
     end
   end
@@ -201,6 +205,13 @@ class TestModel < MiniTest::Unit::TestCase
     assert_raises(Couchbase::Error::RecordInvalid) do
       ValidPost.create(:title => nil)
     end
+  end
+
+  def test_blob_documents
+    contents = File.read(__FILE__)
+    id = Attachment.create(:raw => contents).id
+    blob = Attachment.find(id)
+    assert_equal contents, blob.raw
   end
 
 end

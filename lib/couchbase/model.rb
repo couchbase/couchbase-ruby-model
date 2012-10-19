@@ -120,6 +120,9 @@ module Couchbase
     # @since 0.4.5
     attr_reader :errors
 
+    # @since 0.4.5
+    attr_reader :raw
+
     # @private Container for all attributes with defaults of all subclasses
     @@attributes = ::Hash.new {|hash, key| hash[key] = {}}
 
@@ -391,6 +394,7 @@ module Couchbase
     def self.find(id)
       if id && (res = bucket.get(id, :quiet => false, :extended => true))
         obj, flags, cas = res
+        obj = {:raw => obj} unless obj.is_a?(Hash)
         new({:id => id, :meta => {'flags' => flags, 'cas' => cas}}.merge(obj))
       end
     end
@@ -408,6 +412,7 @@ module Couchbase
     def self.find_by_id(id)
       if id && (res = bucket.get(id, :quiet => true, :extended => true))
         obj, flags, cas = res
+        obj = {:raw => obj} unless obj.is_a?(Hash)
         new({:id => id, :meta => {'flags' => flags, 'cas' => cas}}.merge(obj))
       end
     end
@@ -431,6 +436,14 @@ module Couchbase
     # @param [Hash] attrs attribute-value pairs
     def initialize(attrs = {})
       @errors = ::ActiveModel::Errors.new(self) if defined?(::ActiveModel)
+      @_attributes = ::Hash.new do |h, k|
+        default = self.class.attributes[k]
+        h[k] = if default.respond_to?(:call)
+                 default.call
+               else
+                 default
+               end
+      end
       case attrs
       when Hash
         if defined?(HashWithIndifferentAccess) && !attrs.is_a?(HashWithIndifferentAccess)
@@ -441,17 +454,10 @@ module Couchbase
         @value = attrs.delete(:value)
         @doc = attrs.delete(:doc)
         @meta = attrs.delete(:meta)
-        @_attributes = ::Hash.new do |h, k|
-          default = self.class.attributes[k]
-          h[k] = if default.respond_to?(:call)
-                  default.call
-                else
-                  default
-                end
-        end
+        @raw = attrs.delete(:raw)
         update_attributes(@doc || attrs)
       else
-        @_raw = attrs
+        @raw = attrs
       end
     end
 
@@ -472,14 +478,15 @@ module Couchbase
       if respond_to?(:valid?) && !valid?
         raise Couchbase::Error::RecordInvalid.new(self)
       end
-      value = @_raw ? @_raw : attributes_with_values
+      options = model.defaults.merge(options)
+      value = (options[:format] == :plain) ?  @raw : attributes_with_values
       unless @meta
         @meta = {}
         if @meta.respond_to?(:with_indifferent_access)
           @meta = @meta.with_indifferent_access
         end
       end
-      @meta['cas'] = model.bucket.add(@id, value, model.defaults.merge(options))
+      @meta['cas'] = model.bucket.add(@id, value, options)
       self
     end
 
@@ -505,8 +512,9 @@ module Couchbase
       if respond_to?(:valid?) && !valid?
         raise Couchbase::Error::RecordInvalid.new(self)
       end
-      value = @_raw ? @_raw : attributes_with_values
-      @meta['cas'] = model.bucket.replace(@id, value, model.defaults.merge(options))
+      options = model.defaults.merge(options)
+      value = (options[:format] == :plain) ?  @raw : attributes_with_values
+      @meta['cas'] = model.bucket.replace(@id, value, options)
       self
     end
 
