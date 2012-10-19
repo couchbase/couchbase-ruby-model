@@ -425,8 +425,8 @@ module Couchbase
     def initialize(attrs = {})
       @errors = ::ActiveModel::Errors.new(self) if defined?(::ActiveModel)
       case attrs
-      when Hash, HashWithIndifferentAccess
-        if attrs.respond_to?(:with_indifferent_access)
+      when Hash
+        if defined?(HashWithIndifferentAccess) && !attrs.is_a?(HashWithIndifferentAccess)
           attrs = attrs.with_indifferent_access
         end
         @id = attrs.delete(:id)
