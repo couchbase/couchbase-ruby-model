@@ -1,3 +1,14 @@
+## 0.5.0 / 2012-11-21
+
+* Update template for map function
+* Use extended get for #find_by_id
+* Do not use HashWithIndifferentAccess class unless it defined
+* Pass options to #create method
+* Ensure validness on create
+* Fix storing raw data
+* Define read_attribute and write_attribute methods
+* Support couchbase 1.2.0.z.beta4
+
 ## 0.4.4 / 2012-10-17
 
 * Make #to_param aware about keys
