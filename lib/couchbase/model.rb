@@ -709,7 +709,7 @@ module Couchbase
       }
       if data['doc']
         doc[:meta] = data['doc']['meta']
-        doc[:doc] = data['doc']['json']
+        doc[:doc] = data['doc']['value'] || data['doc']['json']
       end
       new(doc)
     end
