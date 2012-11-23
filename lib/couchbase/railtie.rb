@@ -50,7 +50,8 @@ module Rails #:nodoc:
       def self.rescue_responses
         {
           "Couchbase::Error::NotFound" => :not_found,
-          "Couchbase::Error::NotStored" => :unprocessable_entity
+          "Couchbase::Error::NotStored" => :unprocessable_entity,
+          "Couchbase::Error::RecordInvalid" => :unprocessable_entity
         }
       end
 

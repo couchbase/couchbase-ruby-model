@@ -430,9 +430,18 @@ module Couchbase
     # @since 0.0.1
     #
     # @param [Hash] args attribute-value pairs for the object
-    # @return [Couchbase::Model] an instance of the model
+    # @return [Couchbase::Model, false] an instance of the model
     def self.create(*args)
       new(*args).create
+    end
+
+    # Creates an object just like {{Model.create} but raises an exception if
+    # the record is invalid.
+    #
+    # @since 0.5.1
+    # @raise [Couchbase::Error::RecordInvalid] if the instance is invalid
+    def self.create!(*args)
+      new(*args).create!
     end
 
     # Constructor for all subclasses of Couchbase::Model
@@ -473,7 +482,7 @@ module Couchbase
     #
     # @since 0.0.1
     #
-    # @return [Couchbase::Model] newly created object
+    # @return [Couchbase::Model, false] newly created object
     #
     # @raise [Couchbase::Error::KeyExists] if model with the same +id+
     #   exists in the bucket
@@ -484,7 +493,7 @@ module Couchbase
     def create(options = {})
       @id ||= Couchbase::Model::UUID.generator.next(1, model.thread_storage[:uuid_algorithm])
       if respond_to?(:valid?) && !valid?
-        raise Couchbase::Error::RecordInvalid.new(self)
+        return false
       end
       options = model.defaults.merge(options)
       value = (options[:format] == :plain) ?  @raw : attributes_with_values
@@ -498,13 +507,25 @@ module Couchbase
       self
     end
 
+    # Creates an object just like {{Model#create} but raises an exception if
+    # the record is invalid.
+    #
+    # @since 0.5.1
+    #
+    # @raise [Couchbase::Error::RecordInvalid] if the instance is invalid
+    def create!(options = {})
+      create(options) || raise(Couchbase::Error::RecordInvalid.new(self))
+    end
+
     # Create or update this object based on the state of #new?.
     #
     # @since 0.0.1
     #
     # @param [Hash] options options for operation, see
     #   {{Couchbase::Bucket#set}}
-    # @return [Couchbase::Model] The saved object
+    #
+    # @return [Couchbase::Model, false] saved object or false if there
+    #   are validation errors
     #
     # @example Update the Post model
     #   p = Post.find('hello-world')
@@ -515,15 +536,26 @@ module Couchbase
     #   p = Post.find('hello-world')
     #   p.draft = false
     #   p.save('cas' => p.meta['cas'])
+    #
     def save(options = {})
       return create(options) unless @meta
       if respond_to?(:valid?) && !valid?
-        raise Couchbase::Error::RecordInvalid.new(self)
+        return false
       end
       options = model.defaults.merge(options)
       value = (options[:format] == :plain) ?  @raw : attributes_with_values
       @meta['cas'] = model.bucket.replace(@id, value, options)
       self
+    end
+
+    # Creates an object just like {{Model#save} but raises an exception if
+    # the record is invalid.
+    #
+    # @since 0.5.1
+    #
+    # @raise [Couchbase::Error::RecordInvalid] if the instance is invalid
+    def save!(options = {})
+      save(options) || raise(Couchbase::Error::RecordInvalid.new(self))
     end
 
     # Update this object, optionally accepting new attributes.

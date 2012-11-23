@@ -225,11 +225,13 @@ class TestModel < MiniTest::Unit::TestCase
     post = ValidPost.create(:title => 'Hello, World!')
     assert post.valid?, "post with title should be valid"
     post.title = nil
+    refute post.save
     assert_raises(Couchbase::Error::RecordInvalid) do
-      post.save
+      post.save!
     end
+    refute ValidPost.create(:title => nil)
     assert_raises(Couchbase::Error::RecordInvalid) do
-      ValidPost.create(:title => nil)
+      ValidPost.create!(:title => nil)
     end
   end
 
