@@ -1,3 +1,7 @@
+## 0.5.1 / 2012-11-29
+
+* Introduce save! and create! methods and raise RecordInvalid only from them
+
 ## 0.5.0 / 2012-11-21
 
 * Update template for map function
