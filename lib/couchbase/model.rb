@@ -701,6 +701,16 @@ module Couchbase
       self
     end
 
+    # Format the model for use in a JSON response
+    #
+    # @since 0.5.2
+    #
+    # @return [Hash] a JSON representation of the model for REST APIs
+    #
+    def as_json(options = {})
+      attributes.merge({:id => @id}).as_json(options)
+    end
+
     # @private The thread local storage for model specific stuff
     #
     # @since 0.0.1

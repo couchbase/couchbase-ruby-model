@@ -221,6 +221,16 @@ class TestModel < MiniTest::Unit::TestCase
     assert_equal "the-key", Post.new(:key => ["the", "key"]).to_param
   end
 
+  def test_as_json
+    require 'active_support/json/encoding'
+
+    response = {'id' => 'the-id'}
+    assert_equal response, Post.new(:id => "the-id").as_json
+
+    response = {}
+    assert_equal response, Post.new(:id => "the-id").as_json(:except => :id)
+  end
+
   def test_validation
     post = ValidPost.create(:title => 'Hello, World!')
     assert post.valid?, "post with title should be valid"
