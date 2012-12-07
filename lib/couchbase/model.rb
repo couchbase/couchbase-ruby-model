@@ -124,10 +124,10 @@ module Couchbase
     attr_reader :raw
 
     # @private Container for all attributes with defaults of all subclasses
-    @@attributes = ::Hash.new {|hash, key| hash[key] = {}}
+    @@attributes = {}
 
     # @private Container for all view names of all subclasses
-    @@views = ::Hash.new {|hash, key| hash[key] = {}}
+    @@views = {}
 
     # Use custom connection options
     #
@@ -640,7 +640,11 @@ module Couchbase
     #
     # @return [Hash]
     def self.attributes
-      @@attributes[self]
+      @attributes ||= if self == Model
+                        @@attributes.dup
+                      else
+                        ancestors[1].attributes.dup
+                      end
     end
 
     # All defined views within a class.
@@ -651,7 +655,11 @@ module Couchbase
     #
     # @return [Array]
     def self.views
-      @@views[self]
+      @views ||= if self == Model
+                   @@views.dup
+                 else
+                   ancestors[1].views.dup
+                 end
     end
 
     # All the attributes of the current instance
