@@ -125,7 +125,7 @@ To generate view you can use yet another generator `rails generate
 couchbase:view DESIGNDOCNAME VIEWNAME`. For example how `total_count`
 view could be generated:
 
-    $ rails generate link total_count
+    $ rails generate couchbase:view link total_count
 
 The generated files contains useful info and links about how to write
 map and reduce functions, you can take a look at them in the [templates
@@ -155,6 +155,6 @@ And request them later:
 
 
 [1]: https://github.com/couchbase/couchbase-ruby-client/
-[2]: https://github.com/couchbaselabs/ruby-couchbase-model/tree/master/lib/rails/generators/couchbase/view/templates/
+[2]: https://github.com/couchbase/couchbase-ruby-model/blob/master/lib/rails/generators/couchbase/view/templates/
 [3]: http://couchbase.com/issues/browse/RCBC
 [4]: http://freenode.net/irc_servers.shtml
