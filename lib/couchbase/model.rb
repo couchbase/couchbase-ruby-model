@@ -234,7 +234,7 @@ module Couchbase
           Configuration.design_documents_paths.each do |path|
             ff = File.join(path, design_document.to_s, name.to_s, "#{type}.js")
             if File.file?(ff)
-              contents = File.read(ff).strip
+              contents = File.read(ff).gsub(/^\s*\/\/.*$\n\r?/, '').strip
               next if contents.empty?
               mtime = [mtime, File.mtime(ff).to_i].max
               digest << contents
