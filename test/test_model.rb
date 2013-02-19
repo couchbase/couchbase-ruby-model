@@ -126,12 +126,12 @@ class TestModel < MiniTest::Unit::TestCase
   end
 
   def test_it_raises_not_found_exception
-    assert_raises Couchbase::Error::MissingId do
+    assert_raises Couchbase::Error::NotFound do
       Post.find("missing_key")
     end
   end
 
-  def test_it_raises_not_found_exception
+  def test_it_returns_nil_when_key_not_found
      refute Post.find_by_id("missing_key")
   end
 
