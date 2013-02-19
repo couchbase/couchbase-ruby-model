@@ -643,7 +643,7 @@ module Couchbase
       @attributes ||= if self == Model
                         @@attributes.dup
                       else
-                        ancestors[1].attributes.dup
+                        couchbase_ancestor.attributes.dup
                       end
     end
 
@@ -658,8 +658,17 @@ module Couchbase
       @views ||= if self == Model
                    @@views.dup
                  else
-                   ancestors[1].views.dup
+                   couchbase_ancestor.views.dup
                  end
+    end
+
+    # Returns the first ancestor that is also a Couchbase::Model ancestor.
+    #
+    # @return Class
+    def self.couchbase_ancestor
+      ancestors[1..-1].each do |ancestor|
+        return ancestor if ancestor.ancestors.include?(Couchbase::Model)
+      end
     end
 
     # All the attributes of the current instance

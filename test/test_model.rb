@@ -45,6 +45,11 @@ class Attachment < Couchbase::Model
   defaults :format => :plain
 end
 
+class Comments < Couchbase::Model
+  include Enumerable
+  attribute :comments, :default => []
+end
+
 class TestModel < MiniTest::Unit::TestCase
 
   def setup
@@ -250,6 +255,10 @@ class TestModel < MiniTest::Unit::TestCase
     id = Attachment.create(:raw => contents).id
     blob = Attachment.find(id)
     assert_equal contents, blob.raw
+  end
+
+  def test_couchbase_ancestor
+    assert_equal Couchbase::Model, Comments.couchbase_ancestor
   end
 
 end
