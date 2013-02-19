@@ -18,9 +18,6 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency 'couchbase', '~> 1.2.0.dp'
 
-  s.add_development_dependency 'rake', '~> 0.8.7'
+  s.add_development_dependency 'rake'
   s.add_development_dependency 'minitest'
-  s.add_development_dependency 'rdiscount'
-  s.add_development_dependency 'yard'
-  s.add_development_dependency 'debugger'
 end

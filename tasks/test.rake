@@ -19,7 +19,7 @@ require 'rake/testtask'
 require 'rake/clean'
 
 rule 'test/CouchbaseMock.jar' do |task|
-  jar_path = "0.5-SNAPSHOT/CouchbaseMock-0.5-20120222.060643-15.jar"
+  jar_path = "0.5-SNAPSHOT/CouchbaseMock-0.5-20120726.220757-19.jar"
   sh %{wget -q -O test/CouchbaseMock.jar http://files.couchbase.com/maven2/org/couchbase/mock/CouchbaseMock/#{jar_path}}
 end
 
@@ -27,7 +27,6 @@ CLOBBER << 'test/CouchbaseMock.jar'
 
 Rake::TestTask.new do |test|
   test.libs << "test" << "."
-  test.ruby_opts << "-rruby-debug" if ENV['DEBUG']
   test.pattern = 'test/test_*.rb'
   test.options = '--verbose'
 end
