@@ -51,7 +51,7 @@ contribute to couchbase-model gem only. Then you just need to complete
 gerrit registration steps above and clone the source repository
 (remember the repository on github.com is just a mirror):
 
-    ~ % git clone ssh://YOURNAME@review.couchbase.org:29418/p/couchbase-ruby-model.git
+    ~ % git clone ssh://YOURNAME@review.couchbase.org:29418/couchbase-ruby-model.git
 
 Install [`commit-msg` hook][2]:
 
