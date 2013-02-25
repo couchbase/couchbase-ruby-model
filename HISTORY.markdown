@@ -1,3 +1,12 @@
+## 0.5.1 / 2013-02-25
+
+* Fix attribute inheritance when subclassing (Mike Evans)
+* Added as_json method for rails JSON responses (Stephen von Takach)
+* Add contributing document
+* Fix test hiding
+* Remove comments from the javascript sources
+* Reduce development dependencies and update jar version
+
 ## 0.5.1 / 2012-11-29
 
 * Introduce save! and create! methods and raise RecordInvalid only from them
