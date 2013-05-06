@@ -811,7 +811,7 @@ module Couchbase
 
     protected :attributes_with_values
 
-    if defined?(::Rails)
+    if defined?(::ActiveModel)
       extend ActiveModel::Callbacks
       extend ActiveModel::Naming
       include ActiveModel::Conversion
