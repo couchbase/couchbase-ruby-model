@@ -389,40 +389,56 @@ module Couchbase
       end
     end
 
-    # Find the model using +id+ attribute
-    #
-    # @since 0.0.1
-    #
-    # @param [String, Symbol] id model identificator
-    # @return [Couchbase::Model] an instance of the model
-    # @raise [Couchbase::Error::NotFound] when given key isn't exist
-    #
-    # @example Find model using +id+
-    #   post = Post.find('the-id')
-    def self.find(id)
-      if id && (res = bucket.get(id, :quiet => false, :extended => true))
-        obj, flags, cas = res
-        obj = {:raw => obj} unless obj.is_a?(Hash)
-        new({:id => id, :meta => {'flags' => flags, 'cas' => cas}}.merge(obj))
+    class << self
+      def _find(quiet, *ids)
+        wants_array = ids.first.kind_of?(Array)
+        ids = ids.flatten.compact.uniq
+        unless ids.empty?
+          res = bucket.get(ids, :quiet => quiet, :extended => true).map do |id, (obj, flags, cas)|
+            obj = {:raw => obj} unless obj.is_a?(Hash)
+            new({:id => id, :meta => {'flags' => flags, 'cas' => cas}}.merge(obj))
+          end
+          wants_array ? res : res.first
+        end
       end
+
+      private :_find
     end
 
     # Find the model using +id+ attribute
     #
+    # @since 0.0.1
+    #
+    # @param [String, Symbol, Array] id model identificator(s)
+    # @return [Couchbase::Model, Array] an instance of the model, or an array of instances
+    # @raise [Couchbase::Error::NotFound] when given key isn't exist
+    #
+    # @example Find model using +id+
+    #   post = Post.find('the-id')
+    #
+    # @example Find multiple models using +id+
+    #   post = Post.find('one', 'two')
+    def self.find(*id)
+      _find(false, *id)
+    end
+
+    # Find the model using +id+ attribute
+    #
+    # Unlike {Couchbase::Model.find}, this method won't raise
+    # {Couchbase::Error::NotFound} error when key doesn't exist in the
+    # bucket
+    #
     # @since 0.1.0
     #
-    # @param [String, Symbol] id model identificator
-    # @return [Couchbase::Model, nil] an instance of the model or +nil+ if
+    # @param [String, Symbol] id model identificator(s)
+    # @return [Couchbase::Model, Array, nil] an instance of the model, an array
+    #   of found instances of the model, or +nil+ if
     #   given key isn't exist
     #
     # @example Find model using +id+
     #   post = Post.find_by_id('the-id')
     def self.find_by_id(id)
-      if id && (res = bucket.get(id, :quiet => true, :extended => true))
-        obj, flags, cas = res
-        obj = {:raw => obj} unless obj.is_a?(Hash)
-        new({:id => id, :meta => {'flags' => flags, 'cas' => cas}}.merge(obj))
-      end
+      _find(true, *id)
     end
 
     # Create the model with given attributes

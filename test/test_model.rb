@@ -261,4 +261,23 @@ class TestModel < MiniTest::Unit::TestCase
     assert_equal Couchbase::Model, Comments.couchbase_ancestor
   end
 
+  def test_returns_multiple_instances_of_post
+    Post.create(:id => uniq_id('first'), :title => 'foo')
+    Post.create(:id => uniq_id('second'), :title => 'bar')
+
+    results = Post.find([uniq_id('first'), uniq_id('second')])
+    assert results.kind_of?(Array)
+    assert results.size == 2
+    assert results.detect {|post| post.id == uniq_id('first') }.title == 'foo'
+    assert results.detect {|post| post.id == uniq_id('second') }.title == 'bar'
+  end
+
+  def test_returns_array_for_array_of_ids
+    Post.create(:id => uniq_id('first'), :title => 'foo')
+
+    results = Post.find([uniq_id('first')])
+    assert results.kind_of?(Array)
+    assert results.size == 1
+    assert results[0].title == 'foo'
+  end
 end
