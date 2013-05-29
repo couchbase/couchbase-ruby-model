@@ -280,4 +280,13 @@ class TestModel < MiniTest::Unit::TestCase
     assert results.size == 1
     assert results[0].title == 'foo'
   end
+
+  def test_returns_array_for_array_of_ids_using_find_by_id
+    Post.create(:id => uniq_id('first'), :title => 'foo')
+
+    results = Post.find_by_id([uniq_id('first')])
+    assert results.kind_of?(Array)
+    assert results.size == 1
+    assert results[0].title == 'foo'
+  end
 end

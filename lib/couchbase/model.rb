@@ -437,7 +437,9 @@ module Couchbase
     #
     # @example Find model using +id+
     #   post = Post.find_by_id('the-id')
-    def self.find_by_id(id)
+    # @example Find multiple models using +id+
+    #   posts = Post.find_by_id(['the-id', 'the-id2'])
+    def self.find_by_id(*id)
       _find(true, *id)
     end
 
