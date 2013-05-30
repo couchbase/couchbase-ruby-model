@@ -19,5 +19,5 @@ require 'couchbase/model'
 
 # If we are using Rails then we will include the Couchbase railtie.
 if defined?(Rails)
-  require "couchbase/railtie"
+  require 'couchbase/railtie'
 end

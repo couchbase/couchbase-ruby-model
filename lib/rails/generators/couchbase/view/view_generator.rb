@@ -22,12 +22,12 @@ require 'rails/generators/couchbase_generator'
 module Couchbase
   module Generators
     class ViewGenerator < Rails::Generators::Base
-      desc "Creates a Couchbase views skeletons for map/reduce functions"
+      desc 'Creates a Couchbase views skeletons for map/reduce functions'
 
       argument :model_name, :type => :string
       argument :view_name, :type => :string
 
-      source_root File.expand_path("../templates", __FILE__)
+      source_root File.expand_path('../templates', __FILE__)
 
       def app_name
         Rails::Application.subclasses.first.parent.to_s.underscore

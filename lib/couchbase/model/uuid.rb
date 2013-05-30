@@ -43,7 +43,7 @@ module Couchbase
       # @param [Fixnum] seed seed for pseudorandom number generator.
       def initialize(seed = nil)
         seed ? srand(seed) : srand
-        @prefix, _ = rand_bytes(13).unpack("H26")
+        @prefix, _ = rand_bytes(13).unpack('H26')
         @inc = rand(0xfff) + 1
         @lock = Mutex.new
       end
@@ -69,14 +69,14 @@ module Couchbase
       # @return [String, Array] single string value or array of strings. Where
       #   each value represents 128-bit number written in hexadecimal format.
       def next(count = 1, algorithm = :sequential)
-        raise ArgumentError, "count should be a positive number" unless count > 0
+        raise ArgumentError, 'count should be a positive number' unless count > 0
         uuids = case algorithm
                 when :random
-                  rand_bytes(16 * count).unpack("H32" * count)
+                  rand_bytes(16 * count).unpack('H32' * count)
                 when :utc_random
                   now = Time.now.utc
-                  prefix = "%014x" % [now.to_i * 1_000_000 + now.usec]
-                  rand_bytes(9 * count).unpack("H18" * count).map do |tail|
+                  prefix = '%014x' % [now.to_i * 1_000_000 + now.usec]
+                  rand_bytes(9 * count).unpack('H18' * count).map do |tail|
                     "#{prefix}#{tail}"
                   end
                 when :sequential
@@ -92,16 +92,16 @@ module Couchbase
       def next_seq
         @lock.synchronize do
           if @inc >= 0xfff000
-            @prefix, _ = rand_bytes(13).unpack("H26")
+            @prefix, _ = rand_bytes(13).unpack('H26')
             @inc = rand(0xfff) + 1
           end
           @inc += rand(0xfff) + 1
-          "%s%06x" % [@prefix, @inc]
+          '%s%06x' % [@prefix, @inc]
         end
       end
 
       def rand_bytes(count)
-        bytes = ""
+        bytes = ''
         count.times { bytes << rand(256) }
         bytes
       end

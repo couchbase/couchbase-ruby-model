@@ -25,10 +25,10 @@ require 'couchbase/model/configuration'
 unless Object.respond_to?(:singleton_class)
   require 'couchbase/model/ext/singleton_class'
 end
-unless "".respond_to?(:constantize)
+unless ''.respond_to?(:constantize)
   require 'couchbase/model/ext/constantize'
 end
-unless "".respond_to?(:camelize)
+unless ''.respond_to?(:camelize)
   require 'couchbase/model/ext/camelize'
 end
 
@@ -43,9 +43,9 @@ module Couchbase
     def initialize(record)
       @record = record
       if @record.errors
-        super(@record.errors.full_messages.join(", "))
+        super(@record.errors.full_messages.join(', '))
       else
-        super("Record invalid")
+        super('Record invalid')
       end
     end
   end
@@ -221,7 +221,7 @@ module Couchbase
     # +by_session_id` and `total_views`.
     def self.ensure_design_document!
       unless Configuration.design_documents_paths
-        raise "Configuration.design_documents_path must be directory"
+        raise 'Configuration.design_documents_path must be directory'
       end
 
       doc = {'_id' => "_design/#{design_document}", 'views' => {}}
@@ -351,7 +351,7 @@ module Couchbase
       end
       is_spatial = options.delete(:spatial)
       names.each do |name|
-        path = "_design/%s/_%s/%s" % [design_document, is_spatial ? "spatial" : "view", name]
+        path = '_design/%s/_%s/%s' % [design_document, is_spatial ? 'spatial' : 'view', name]
         views[name] = lambda do |*params|
           params = options.merge(params.first || {})
           View.new(bucket, path, params)
@@ -604,7 +604,7 @@ module Couchbase
     #   p = Post.find('hello-world')
     #   p.delete
     def delete(options = {})
-      raise Couchbase::Error::MissingId, "missing id attribute" unless @id
+      raise Couchbase::Error::MissingId, 'missing id attribute' unless @id
       model.bucket.delete(@id, options)
       @id = nil
       @meta = nil
@@ -722,7 +722,7 @@ module Couchbase
     # @raise [Error::MissingId] for records without +id+
     #   attribute
     def reload
-      raise Couchbase::Error::MissingId, "missing id attribute" unless @id
+      raise Couchbase::Error::MissingId, 'missing id attribute' unless @id
       attrs = model.find(@id).attributes
       update_attributes(attrs)
       self
@@ -797,15 +797,15 @@ module Couchbase
     # @since 0.0.1
     def inspect
       attrs = []
-      attrs << ["key", @key.inspect] unless @key.nil?
-      attrs << ["value", @value.inspect] unless @value.nil?
+      attrs << ['key', @key.inspect] unless @key.nil?
+      attrs << ['value', @value.inspect] unless @value.nil?
       model.attributes.map do |attr, default|
         val = read_attribute(attr)
         attrs << [attr.to_s, val.inspect] unless val.nil?
       end
       attrs.sort!
       attrs.unshift([:id, id]) unless new?
-      sprintf("#<%s %s>", model, attrs.map{|a| a.join(": ")}.join(", "))
+      sprintf('#<%s %s>', model, attrs.map { |a| a.join(': ') }.join(', '))
     end
 
     def self.inspect
@@ -857,7 +857,7 @@ module Couchbase
     def to_param
       keys = to_key
       if keys && !keys.empty?
-        keys.join("-")
+        keys.join('-')
       end
     end
   end

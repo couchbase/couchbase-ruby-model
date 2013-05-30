@@ -34,12 +34,12 @@ class CouchbaseServer
     @port = @port.to_i
 
     if @host.nil? || @host.empty? || @port == 0
-      raise ArgumentError, "Check COUCHBASE_SERVER variable. It should be hostname:port"
+      raise ArgumentError, 'Check COUCHBASE_SERVER variable. It should be hostname:port'
     end
 
     @config = Yajl::Parser.parse(open("http://#{@host}:#{@port}/pools/default"))
-    @num_nodes = @config["nodes"].size
-    @buckets_spec = params[:buckets_spec] || "default:"  # "default:,protected:secret,cache::memcache"
+    @num_nodes = @config['nodes'].size
+    @buckets_spec = params[:buckets_spec] || 'default:'  # "default:,protected:secret,cache::memcache"
   end
 
   def start
@@ -67,17 +67,17 @@ class CouchbaseMock
   end
 
   def initialize(params = {})
-    @host = "127.0.0.1"
+    @host = '127.0.0.1'
     @port = 0
     @num_nodes = 10
     @num_vbuckets = 4096
-    @buckets_spec = "default:"  # "default:,protected:secret,cache::memcache"
+    @buckets_spec = 'default:'  # "default:,protected:secret,cache::memcache"
     params.each do |key, value|
       send("#{key}=", value)
     end
     yield self if block_given?
     if @num_vbuckets < 1 || (@num_vbuckets & (@num_vbuckets - 1) != 0)
-      raise ArgumentError, "Number of vbuckets should be a power of two and greater than zero"
+      raise ArgumentError, 'Number of vbuckets should be a power of two and greater than zero'
     end
   end
 
@@ -86,15 +86,15 @@ class CouchbaseMock
     @monitor.socket = TCPServer.new(nil, 0)
     @monitor.socket.listen(10)
     _, @monitor.port, _, _ = @monitor.socket.addr
-    trap("CLD") do
-      puts "CouchbaseMock.jar died unexpectedly during startup"
+    trap('CLD') do
+      puts 'CouchbaseMock.jar died unexpectedly during startup'
       exit(1)
     end
     @monitor.pid = fork
     if @monitor.pid.nil?
       rc = exec(command_line("--harakiri-monitor=:#{@monitor.port}"))
     else
-      trap("CLD", "SIG_DFL")
+      trap('CLD', 'SIG_DFL')
       @monitor.client, _ = @monitor.socket.accept
       @port = @monitor.client.recv(100).to_i
     end
@@ -103,15 +103,15 @@ class CouchbaseMock
   def stop
     @monitor.client.close
     @monitor.socket.close
-    Process.kill("TERM", @monitor.pid)
+    Process.kill('TERM', @monitor.pid)
     Process.wait(@monitor.pid)
   end
 
-  def failover_node(index, bucket = "default")
+  def failover_node(index, bucket = 'default')
     @monitor.client.send("failover,#{index},#{bucket}", 0)
   end
 
-  def respawn_node(index, bucket = "default")
+  def respawn_node(index, bucket = 'default')
     @monitor.client.send("respawn,#{index},#{bucket}", 0)
   end
 
@@ -137,7 +137,7 @@ class MiniTest::Unit::TestCase
       mock = CouchbaseServer.new(params)
       if (params[:port] && mock.port != params[:port]) ||
         (params[:host] && mock.host != params[:host]) ||
-        mock.buckets_spec != "default:"
+        mock.buckets_spec != 'default:'
         skip("Unable to configure real cluster. Requested config is: #{params.inspect}")
       end
     else
@@ -163,6 +163,6 @@ class MiniTest::Unit::TestCase
   end
 
   def uniq_id(*suffixes)
-    [caller.first[/.*[` ](.*)'/, 1], suffixes].join("_")
+    [caller.first[/.*[` ](.*)'/, 1], suffixes].join('_')
   end
 end

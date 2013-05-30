@@ -17,8 +17,8 @@
 # limitations under the License.
 #
 
-require "rails/generators/named_base"
-require "rails/generators/active_model"
+require 'rails/generators/named_base'
+require 'rails/generators/active_model'
 
 module Couchbase #:nodoc:
   module Generators #:nodoc:

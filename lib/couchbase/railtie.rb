@@ -49,9 +49,9 @@ module Rails #:nodoc:
       # @return [Hash] rescued responses
       def self.rescue_responses
         {
-          "Couchbase::Error::NotFound" => :not_found,
-          "Couchbase::Error::NotStored" => :unprocessable_entity,
-          "Couchbase::Error::RecordInvalid" => :unprocessable_entity
+          'Couchbase::Error::NotFound' => :not_found,
+          'Couchbase::Error::NotStored' => :unprocessable_entity,
+          'Couchbase::Error::RecordInvalid' => :unprocessable_entity
         }
       end
 
@@ -85,8 +85,8 @@ module Rails #:nodoc:
       #     <<: *common
       #     bucket: example_development
       #
-      initializer "couchbase.setup_connection" do
-        config_file = Rails.root.join("config", "couchbase.yml")
+      initializer 'couchbase.setup_connection' do
+        config_file = Rails.root.join('config', 'couchbase.yml')
         if config_file.file? &&
           config = YAML.load(ERB.new(File.read(config_file)).result)[Rails.env]
           ::Couchbase.connection_options = config.with_indifferent_access
@@ -95,10 +95,10 @@ module Rails #:nodoc:
 
       # After initialization we will warn the user if we can't find a couchbase.yml and
       # alert to create one.
-      initializer "couchbase.warn_configuration_missing" do
-        unless ARGV.include?("couchbase:config")
+      initializer 'couchbase.warn_configuration_missing' do
+        unless ARGV.include?('couchbase:config')
           config.after_initialize do
-            unless Rails.root.join("config", "couchbase.yml").file?
+            unless Rails.root.join('config', 'couchbase.yml').file?
               puts "\nCouchbase config not found. Create a config file at: config/couchbase.yml"
               puts "to generate one run: rails generate couchbase:config\n\n"
             end
@@ -107,13 +107,13 @@ module Rails #:nodoc:
       end
 
       # Check (and upgrade if needed) all design documents
-      initializer "couchbase.upgrade_design_documents", :after =>"couchbase.setup_connection"  do |app|
-        ::Couchbase::Model::Configuration.design_documents_paths ||= app.config.paths["app/models"]
+      initializer 'couchbase.upgrade_design_documents', :after => 'couchbase.setup_connection'  do |app|
+        ::Couchbase::Model::Configuration.design_documents_paths ||= app.config.paths['app/models']
         if config.couchbase.ensure_design_documents
           config.to_prepare do
-            app.config.paths["app/models"].each do |path|
+            app.config.paths['app/models'].each do |path|
               Dir.glob("#{path}/**/*.rb").sort.each do |file|
-                require_dependency(file.gsub("#{path}/" , "").gsub(".rb", ""))
+                require_dependency(file.gsub("#{path}/" , '').gsub('.rb', ''))
               end
             end
             begin
@@ -129,7 +129,7 @@ module Rails #:nodoc:
 
       # Set the proper error types for Rails. NotFound errors should be
       # 404s and not 500s, validation errors are 422s.
-      initializer "couchbase.load_http_errors" do |app|
+      initializer 'couchbase.load_http_errors' do |app|
         config.after_initialize do
           unless config.action_dispatch.rescue_responses
             ActionDispatch::ShowExceptions.rescue_responses.update(Railtie.rescue_responses)

@@ -22,12 +22,12 @@ require 'rails/generators/couchbase_generator'
 module Couchbase
   module Generators
     class ConfigGenerator < Rails::Generators::Base
-      desc "Creates a Couchbase configuration file at config/couchbase.yml"
+      desc 'Creates a Couchbase configuration file at config/couchbase.yml'
 
       argument :database_name, :type => :string, :optional => true
 
       def self.source_root
-        @_couchbase_source_root ||= File.expand_path("../templates", __FILE__)
+        @_couchbase_source_root ||= File.expand_path('../templates', __FILE__)
       end
 
       def app_name
@@ -35,7 +35,7 @@ module Couchbase
       end
 
       def create_config_file
-        template 'couchbase.yml', File.join('config', "couchbase.yml")
+        template 'couchbase.yml', File.join('config', 'couchbase.yml')
       end
 
     end
