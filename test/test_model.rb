@@ -50,6 +50,10 @@ class Comments < Couchbase::Model
   attribute :comments, :default => []
 end
 
+class User < Couchbase::Model
+  design_document :people
+end
+
 class TestModel < MiniTest::Unit::TestCase
 
   def setup
@@ -62,6 +66,12 @@ class TestModel < MiniTest::Unit::TestCase
 
   def teardown
     stop_mock(@mock)
+  end
+
+  def test_design_document
+    assert_equal 'people', User.design_document
+    assert_equal 'new_people', User.design_document('new_people')
+    assert_equal 'post', Post.design_document
   end
 
   def test_it_supports_value_property
