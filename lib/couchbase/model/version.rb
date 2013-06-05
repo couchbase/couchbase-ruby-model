@@ -19,7 +19,7 @@ module Couchbase
 
   class Model
 
-    VERSION = '0.5.2'
+    VERSION = '0.5.3'
 
   end
 

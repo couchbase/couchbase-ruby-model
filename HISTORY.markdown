@@ -1,4 +1,12 @@
-## 0.5.1 / 2013-02-25
+## 0.5.3 / 2013-06-06
+
+* Prefer single-quoted strings (Andrey Koleshko)
+* Test for Model.design_document (Andrey Koleshko)
+* Support for batch finding multiple objects by id (Jon Moses)
+* Test for activemodel instead of rails for activemodel validations
+* Update couchbase dependency to 1.3.0
+
+## 0.5.2 / 2013-02-25
 
 * Fix attribute inheritance when subclassing (Mike Evans)
 * Added as_json method for rails JSON responses (Stephen von Takach)
