@@ -18,6 +18,7 @@
 require 'digest/md5'
 
 require 'couchbase'
+require 'couchbase/active_model'
 require 'couchbase/model/version'
 require 'couchbase/model/uuid'
 require 'couchbase/model/configuration'
@@ -100,6 +101,8 @@ module Couchbase
   #    connect :port => 80, :bucket => 'blog'
   #  end
   class Model
+    include Couchbase::ActiveModel
+
     # Each model must have identifier
     #
     # @since 0.0.1
@@ -828,25 +831,6 @@ module Couchbase
     end
 
     private :attributes_with_values
-
-    if defined?(::ActiveModel)
-      extend ActiveModel::Callbacks
-      extend ActiveModel::Naming
-      include ActiveModel::Conversion
-      include ActiveModel::Validations
-
-      define_model_callbacks :create, :update, :delete, :save
-      [:save, :create, :update, :delete].each do |meth|
-        class_eval <<-EOC
-          alias #{meth}_without_callbacks #{meth}
-          def #{meth}(*args, &block)
-            run_callbacks(:#{meth}) do
-              #{meth}_without_callbacks(*args, &block)
-            end
-          end
-        EOC
-      end
-    end
 
     # Redefine (if exists) #to_key to use #key if #id is missing
     def to_key
