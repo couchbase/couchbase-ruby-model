@@ -827,7 +827,7 @@ module Couchbase
       ret
     end
 
-    protected :attributes_with_values
+    private :attributes_with_values
 
     if defined?(::ActiveModel)
       extend ActiveModel::Callbacks
