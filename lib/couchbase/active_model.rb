@@ -7,9 +7,10 @@ module Couchbase
         extend ::ActiveModel::Naming
         include ::ActiveModel::Conversion
         include ::ActiveModel::Validations
+        include ::ActiveModel::Validations::Callbacks
 
-        define_model_callbacks :create, :update, :delete, :save
-        [:save, :create, :update, :delete].each do |meth|
+        define_model_callbacks :create, :update, :delete, :save, :initialize
+        [:save, :create, :update, :delete, :initialize].each do |meth|
           class_eval <<-EOC
             alias #{meth}_without_callbacks #{meth}
             def #{meth}(*args, &block)

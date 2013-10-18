@@ -54,8 +54,25 @@ class TestActiveModelIntegration < MiniTest::Unit::TestCase
   end
 
   def test_active_model_includes
-    [ActiveModel::Conversion, ActiveModel::Validations, ActiveModel::Validations::HelperMethods].each do |mod|
+    [
+      ActiveModel::Conversion,
+      ActiveModel::Validations,
+      ActiveModel::Validations::Callbacks,
+      ActiveModel::Validations::HelperMethods
+    ].each do |mod|
       assert ActiveUser.ancestors.include?(mod), "Model not including #{mod}"
+    end
+  end
+
+  def test_callbacks
+    [
+      :before_validation, :after_validation,
+      :after_initialize, :before_create, :around_create,
+      :after_create, :before_delete, :around_delete,
+      :after_delete, :before_save, :around_save, :after_save,
+      :before_update, :around_update, :after_update
+    ].each do |callback|
+      assert ActiveObj.respond_to?(callback), "Model doesn't support callback: #{callback}"
     end
   end
 
