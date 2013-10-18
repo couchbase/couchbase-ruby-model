@@ -1,14 +1,12 @@
 module Couchbase
   module ActiveModel
 
-    def included(base)
-      return unless defined?(::ActiveModel)
-
+    def self.included(base)
       base.class_eval do
-        extend ActiveModel::Callbacks
-        extend ActiveModel::Naming
-        include ActiveModel::Conversion
-        include ActiveModel::Validations
+        extend ::ActiveModel::Callbacks
+        extend ::ActiveModel::Naming
+        include ::ActiveModel::Conversion
+        include ::ActiveModel::Validations
 
         define_model_callbacks :create, :update, :delete, :save
         [:save, :create, :update, :delete].each do |meth|
@@ -22,6 +20,48 @@ module Couchbase
           EOC
         end
       end
+    end
+
+    # Public: Allows for access to ActiveModel functionality.
+    #
+    # Returns self.
+    def to_model
+      self
+    end
+
+    # Public: Hashes our unique key instead of the entire object.
+    # Ruby normally hashes an object to be used in comparisons.  In our case
+    # we may have two techincally different objects referencing the same entity id,
+    # so we will hash just the class and id (via to_key) to compare so we get the
+    # expected result
+    #
+    # Returns a string representing the unique key.
+    def hash
+      to_param.hash
+    end
+
+    # Public: Overrides eql? to use == in the comparison.
+    #
+    # other - Another object to compare to
+    #
+    # Returns a boolean.
+    def eql?(other)
+      self == other
+    end
+
+    # Public: Overrides == to compare via class and entity id.
+    #
+    # other - Another object to compare to
+    #
+    # Example
+    #
+    #     movie = Movie.find(1234)
+    #     movie.to_key
+    #     # => 'movie-1234'
+    #
+    # Returns a string representing the unique key.
+    def ==(other)
+      hash == other.hash
     end
 
   end

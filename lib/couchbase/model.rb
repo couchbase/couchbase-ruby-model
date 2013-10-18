@@ -22,6 +22,7 @@ require 'couchbase/active_model'
 require 'couchbase/model/version'
 require 'couchbase/model/uuid'
 require 'couchbase/model/configuration'
+require 'active_model'
 
 unless Object.respond_to?(:singleton_class)
   require 'couchbase/model/ext/singleton_class'
@@ -101,7 +102,6 @@ module Couchbase
   #    connect :port => 80, :bucket => 'blog'
   #  end
   class Model
-    include Couchbase::ActiveModel
 
     # Each model must have identifier
     #
@@ -844,6 +844,8 @@ module Couchbase
         keys.join('-')
       end
     end
+
+    include Couchbase::ActiveModel
   end
 
 end
