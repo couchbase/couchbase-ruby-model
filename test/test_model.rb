@@ -140,6 +140,15 @@ class TestModel < MiniTest::Unit::TestCase
     assert_equal 'Good bye, world', orig.title
   end
 
+  def test_reloads_cas_value_with_reload_method
+    orig = Post.create(:title => "Hello, world")
+    double = Post.find(orig.id)
+    orig.update(:title => "Good bye, world")
+    double.reload
+
+    assert_equal orig.meta[:cas], double.meta[:cas]
+  end
+
   def test_it_raises_not_found_exception
     assert_raises Couchbase::Error::NotFound do
       Post.find('missing_key')

@@ -726,8 +726,9 @@ module Couchbase
     #   attribute
     def reload
       raise Couchbase::Error::MissingId, 'missing id attribute' unless @id
-      attrs = model.find(@id).attributes
-      update_attributes(attrs)
+      pristine = model.find(@id)
+      update_attributes(pristine.attributes)
+      @meta[:cas] = pristine.meta[:cas]
       self
     end
 
