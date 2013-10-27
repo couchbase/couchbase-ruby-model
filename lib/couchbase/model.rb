@@ -386,7 +386,7 @@ module Couchbase
     def self.belongs_to(name, options = {})
       ref = "#{name}_id"
       attribute(ref)
-      assoc = name.to_s.camelize.constantize
+      assoc = (options[:class_name] || name).to_s.camelize.constantize
       define_method(name) do
         assoc.find(self.send(ref))
       end

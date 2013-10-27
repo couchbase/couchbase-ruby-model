@@ -41,6 +41,11 @@ class Beer < Couchbase::Model
   belongs_to :brewery
 end
 
+class Wine < Couchbase::Model
+  attribute :name
+  belongs_to :winery, :class_name => :Brewery
+end
+
 class Attachment < Couchbase::Model
   defaults :format => :plain
 end
@@ -59,7 +64,7 @@ class TestModel < MiniTest::Unit::TestCase
   def setup
     @mock = start_mock
     bucket = Couchbase.connect(:hostname => @mock.host, :port => @mock.port)
-    [Post, ValidPost, Brewery, Beer, Attachment].each do |model|
+    [Post, ValidPost, Brewery, Beer, Attachment, Wine].each do |model|
       model.bucket = bucket
     end
   end
@@ -215,6 +220,16 @@ class TestModel < MiniTest::Unit::TestCase
     assert_raises Couchbase::Error::NotFound do
       Post.bucket.get(uniq_id)
     end
+  end
+
+  def test_belongs_to_with_class_name_assoc
+    brewery = Brewery.create(:name => "R Wines")
+    assert_includes Wine.attributes.keys, :winery_id
+    wine = Wine.create(:name => "Classy", :winery_id => brewery.id)
+    assert_respond_to wine, :winery
+    assoc = wine.winery
+    assert_instance_of Brewery, assoc
+    assert_equal "R Wines", assoc.name
   end
 
   def test_fails_to_delete_model_without_id
