@@ -291,10 +291,12 @@ module Couchbase
     def read_attribute(attr_name)
       @_attributes[attr_name]
     end
+    alias :[] :read_attribute
 
     def write_attribute(attr_name, value)
       @_attributes[attr_name] = value
     end
+    alias :[]= :write_attribute
 
     # Defines an attribute for the model
     #

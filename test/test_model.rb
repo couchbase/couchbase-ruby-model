@@ -105,6 +105,17 @@ class TestModel < MiniTest::Unit::TestCase
     assert_equal 'foo', post.title
   end
 
+  def test_access_attribute_by_key
+    post = Post.new(:title => 'Hello, world')
+    assert_equal 'Hello, world', post[:title]
+  end
+
+  def test_update_attribute_by_key
+    post = Post.new(:title => 'Hello, world')
+    post[:title] = 'world, Hello'
+    assert_equal 'world, Hello', post.title
+  end
+
   def test_assigns_attributes_from_the_hash
     post = Post.new(:title => 'Hello, world')
     assert_equal 'Hello, world', post.title
