@@ -121,4 +121,26 @@ class TestActiveModelIntegration < MiniTest::Unit::TestCase
     assert_equal 'the-key', ActiveObj.new(:key => ['the', 'key']).to_param
   end
 
+  def test_dirty_tracking_on_attribute
+    tester = ActiveUser.create(:email => 'joe@example.com', :role => 'admin')
+    tester.email = 'bob@example.com'
+    assert tester.changed?
+    assert_equal tester.changed, [:email]
+  end
+
+  def test_dirty_tracking_reset_on_save
+    tester = ActiveUser.create(:email => 'joe@example.com', :role => 'admin')
+    tester.email = 'bob@example.com'
+    assert tester.changed?
+    tester.save
+    refute tester.changed?
+  end
+
+  def test_dirty_tracking_previous_values
+    tester = ActiveUser.create(:email => 'joe@example.com', :role => 'admin')
+    tester.email = 'bob@example.com'
+    tester.save
+    assert_equal tester.previous_changes[:email], ['joe@example.com', 'bob@example.com']
+  end
+
 end

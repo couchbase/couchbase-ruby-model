@@ -8,6 +8,7 @@ module Couchbase
         include ::ActiveModel::Conversion
         include ::ActiveModel::Validations
         include ::ActiveModel::Validations::Callbacks
+        include ::ActiveModel::Dirty
 
         define_model_callbacks :create, :update, :delete, :save, :initialize
         [:save, :create, :update, :delete, :initialize].each do |meth|

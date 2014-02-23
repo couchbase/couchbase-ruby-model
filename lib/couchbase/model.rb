@@ -294,6 +294,7 @@ module Couchbase
     alias :[] :read_attribute
 
     def write_attribute(attr_name, value)
+      attribute_will_change!(attr_name) unless @_attributes[attr_name] == value
       @_attributes[attr_name] = value
     end
     alias :[]= :write_attribute
@@ -487,7 +488,9 @@ module Couchbase
       case attrs
       when Hash
         if defined?(HashWithIndifferentAccess) && !attrs.is_a?(HashWithIndifferentAccess)
-          attrs = attrs.with_indifferent_access
+          if attrs.respond_to?(:with_indifferent_access)
+            attrs = attrs.with_indifferent_access
+          end
         end
         @id = attrs.delete(:id)
         @key = attrs.delete(:key)
@@ -496,6 +499,8 @@ module Couchbase
         @meta = attrs.delete(:meta)
         @raw = attrs.delete(:raw)
         update_attributes(@doc || attrs)
+        @previously_changed = nil
+        @changed_attributes.clear unless @changed_attributes.nil?
       else
         @raw = attrs
       end
@@ -568,6 +573,8 @@ module Couchbase
       options = model.defaults.merge(options)
       value = (options[:format] == :plain) ?  @raw : attributes_with_values
       @meta['cas'] = model.bucket.replace(@id, value, options)
+      @previously_changed = changes
+      @changed_attributes.clear unless @changed_attributes.nil?
       self
     end
 
@@ -700,7 +707,7 @@ module Couchbase
     #
     # @return [Hash]
     def attributes
-      @_attributes
+      @_attributes || {}
     end
 
     # Update all attributes without persisting the changes.
@@ -849,6 +856,8 @@ module Couchbase
     end
 
     include Couchbase::ActiveModel
+    ActiveSupport.run_load_hooks :couchbase_model, self
   end
 
 end
+
