@@ -125,7 +125,7 @@ class TestActiveModelIntegration < MiniTest::Unit::TestCase
     tester = ActiveUser.create(:email => 'joe@example.com', :role => 'admin')
     tester.email = 'bob@example.com'
     assert tester.changed?
-    assert_equal tester.changed, [:email]
+    assert_equal tester.changed, ["email"]
   end
 
   def test_dirty_tracking_reset_on_save
