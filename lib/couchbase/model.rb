@@ -220,7 +220,7 @@ module Couchbase
     #   |  |  `- reduce.js
     #
     # The directory structure above demonstrate layout for design document
-    # with id +_design/link+ and three views: +by_create_at+,
+    # with id +_design/link+ and three views: +by_created_at+,
     # +by_session_id` and `total_views`.
     def self.ensure_design_document!
       unless Configuration.design_documents_paths
