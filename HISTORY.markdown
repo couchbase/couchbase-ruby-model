@@ -1,3 +1,8 @@
+## 0.5.4 / 2014-08-30
+
+* Improved ActiveModel support
+* Fixed stale CAS on model reload
+
 ## 0.5.3 / 2013-06-06
 
 * Prefer single-quoted strings (Andrey Koleshko)
