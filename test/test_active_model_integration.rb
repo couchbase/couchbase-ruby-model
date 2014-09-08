@@ -143,4 +143,17 @@ class TestActiveModelIntegration < MiniTest::Unit::TestCase
     assert_equal tester.previous_changes[:email], ['joe@example.com', 'bob@example.com']
   end
 
+  def test_save_without_validations
+    tester = ActiveUser.new(:email => 'joe@example.com', :role => nil)
+    assert tester.save(:validate => false), 'Validations not skipped'
+  end
+
+  def test_save_bang_without_validations
+    tester = ActiveUser.new(:email => 'joe@example.com', :role => nil)
+    begin
+      tester.save!(:validate => false)
+    rescue
+      assert false, 'Validations not skipped'
+    end
+  end
 end

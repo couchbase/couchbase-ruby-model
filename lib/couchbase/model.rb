@@ -520,9 +520,8 @@ module Couchbase
     #   p.create
     def create(options = {})
       @id ||= Couchbase::Model::UUID.generator.next(1, model.thread_storage[:uuid_algorithm])
-      if respond_to?(:valid?) && !valid?
-        return false
-      end
+      return false if failed_validations?(options)
+
       options = model.defaults.merge(options)
       value = (options[:format] == :plain) ?  @raw : attributes_with_values
       unless @meta
@@ -567,9 +566,8 @@ module Couchbase
     #
     def save(options = {})
       return create(options) unless @meta
-      if respond_to?(:valid?) && !valid?
-        return false
-      end
+      return false if failed_validations?(options)
+
       options = model.defaults.merge(options)
       value = (options[:format] == :plain) ?  @raw : attributes_with_values
       @meta['cas'] = model.bucket.replace(@id, value, options)
@@ -841,6 +839,14 @@ module Couchbase
     end
 
     private :attributes_with_values
+
+    # @private Returns if validations can be and should be performed,
+    #          and they fail
+    #
+    # @since 0.5.5
+    def failed_validations?(options)
+      options[:validate] != false && respond_to?(:valid?) && !valid?
+    end
 
     # Redefine (if exists) #to_key to use #key if #id is missing
     def to_key
