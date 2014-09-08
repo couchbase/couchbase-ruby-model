@@ -498,7 +498,7 @@ module Couchbase
         @doc = attrs.delete(:doc)
         @meta = attrs.delete(:meta)
         @raw = attrs.delete(:raw)
-        update_attributes(@doc || attrs)
+        assign_attributes(@doc || attrs)
         @previously_changed = nil
         @changed_attributes.clear unless @changed_attributes.nil?
       else
@@ -596,9 +596,10 @@ module Couchbase
     #   {{Couchbase::Bucket#set}}
     # @return [Couchbase::Model] The updated object
     def update(attrs, options = {})
-      update_attributes(attrs)
+      assign_attributes(attrs)
       save(options)
     end
+    alias :update_attributes :update
 
     # Delete this object from the bucket
     #
@@ -713,7 +714,7 @@ module Couchbase
     # @since 0.0.1
     #
     # @param [Hash] attrs attribute-value pairs.
-    def update_attributes(attrs)
+    def assign_attributes(attrs)
       if id = attrs.delete(:id)
         @id = id
       end
@@ -734,7 +735,7 @@ module Couchbase
     def reload
       raise Couchbase::Error::MissingId, 'missing id attribute' unless @id
       pristine = model.find(@id)
-      update_attributes(pristine.attributes)
+      assign_attributes(pristine.attributes)
       @meta[:cas] = pristine.meta[:cas]
       self
     end

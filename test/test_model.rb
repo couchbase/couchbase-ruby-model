@@ -148,6 +148,17 @@ class TestModel < MiniTest::Unit::TestCase
     assert_equal 'This is my first example', post.body
   end
 
+  def test_update_attributes_saves_record
+    post = Post.new
+
+    assert !post.persisted?, 'Post already persisted'
+    post.update_attributes(:title => 'Hello, world', :body => "How's it going?")
+    assert post.persisted?,  'Post not persisted'
+
+    assert_equal "How's it going?", post.body
+    assert_equal "Hello, world",    post.title
+  end
+
   def test_refreshes_the_attributes_with_reload_method
     orig = Post.create(:title => 'Hello, world')
     double = Post.find(orig.id)
