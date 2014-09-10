@@ -621,6 +621,7 @@ module Couchbase
       @meta = nil
       self
     end
+    alias :destroy :delete
 
     # Check if the record have +id+ attribute
     #

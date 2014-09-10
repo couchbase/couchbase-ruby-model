@@ -244,6 +244,14 @@ class TestModel < MiniTest::Unit::TestCase
     end
   end
 
+  def test_destroy_an_existing_model
+    post = Post.create(:id => uniq_id)
+    assert post.destroy
+    assert_raises Couchbase::Error::NotFound do
+      Post.bucket.get(uniq_id)
+    end
+  end
+
   def test_belongs_to_with_class_name_assoc
     brewery = Brewery.create(:name => "R Wines")
     assert_includes Wine.attributes.keys, :winery_id
