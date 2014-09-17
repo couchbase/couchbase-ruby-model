@@ -280,6 +280,19 @@ class TestModel < MiniTest::Unit::TestCase
     assert_equal 'Anheuser-Busch', assoc.name
   end
 
+  def test_belongs_to_assoc_assign
+    brewery = Brewery.create(:name => 'Anheuser-Busch')
+    beer = Beer.create(:name => 'Budweiser')
+    beer.brewery = brewery
+
+    assert_equal brewery.id, beer.brewery_id
+    assert_equal brewery, beer.brewery
+
+    beer.brewery = nil
+    assert_nil beer.brewery
+    assert_nil beer.brewery_id
+  end
+
   def test_to_key
     assert_equal ['the-id'], Post.new(:id => 'the-id').to_key
     assert_equal ['the-key'], Post.new(:key => 'the-key').to_key

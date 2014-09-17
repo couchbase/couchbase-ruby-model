@@ -390,8 +390,21 @@ module Couchbase
       ref = "#{name}_id"
       attribute(ref)
       assoc = (options[:class_name] || name).to_s.camelize.constantize
+
+      # Define reader
       define_method(name) do
         assoc.find(self.send(ref))
+      end
+      # Define writer
+      attr_writer name
+      define_method(:"#{name}=") do |value|
+        if value
+          self.send("#{ref}=", value.id)
+        else
+          self.send("#{ref}=", nil)
+        end
+
+        instance_variable_set("@#{name}", value)
       end
     end
 
