@@ -70,7 +70,8 @@ class TestActiveModelIntegration < MiniTest::Unit::TestCase
       :after_initialize, :before_create, :around_create,
       :after_create, :before_delete, :around_delete,
       :after_delete, :before_save, :around_save, :after_save,
-      :before_update, :around_update, :after_update
+      :before_update, :around_update, :after_update,
+      :before_destroy, :around_destroy, :after_destroy
     ].each do |callback|
       assert ActiveObj.respond_to?(callback), "Model doesn't support callback: #{callback}"
     end
