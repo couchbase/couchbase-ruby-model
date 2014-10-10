@@ -182,6 +182,12 @@ class TestModel < MiniTest::Unit::TestCase
     end
   end
 
+  def test_it_raises_not_found_exception_if_id_is_nil
+    assert_raises Couchbase::Error::NotFound do
+      Post.find(nil)
+    end
+  end
+
   def test_it_returns_nil_when_key_not_found
      refute Post.find_by_id('missing_key')
   end

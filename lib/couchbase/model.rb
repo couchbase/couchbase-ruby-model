@@ -393,7 +393,10 @@ module Couchbase
 
       # Define reader
       define_method(name) do
-        assoc.find(self.send(ref))
+        begin
+          assoc.find(self.send(ref))
+        rescue Couchbase::Error::NotFound
+        end
       end
       # Define writer
       attr_writer name
@@ -412,7 +415,9 @@ module Couchbase
       def _find(quiet, *ids)
         wants_array = ids.first.kind_of?(Array)
         ids = ids.flatten.compact.uniq
-        unless ids.empty?
+        if ids.empty?
+          raise Couchbase::Error::NotFound unless quiet
+        else
           res = bucket.get(ids, :quiet => quiet, :extended => true).map do |id, (obj, flags, cas)|
             obj = {:raw => obj} unless obj.is_a?(Hash)
             new({:id => id, :meta => {'flags' => flags, 'cas' => cas}}.merge(obj))
